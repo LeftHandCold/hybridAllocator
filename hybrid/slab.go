@@ -1,4 +1,4 @@
-package hsAllocator
+package hybrid
 
 // Allocate allocates memory of specified size from slab cache
 func (s *SlabAllocator) Allocate(size uint64) (uint64, error) {
@@ -10,7 +10,7 @@ func (s *SlabAllocator) Allocate(size uint64) (uint64, error) {
 	slabs, exists := s.cache[size]
 	if !exists || len(slabs) == 0 {
 		Debug("No existing slab found for size %d, creating new one", size)
-		// Get new slab from buddy allocator
+		// Get new slab from buddy hybrid
 		start, err := s.buddy.Allocate(SlabMaxSize)
 		if err != nil {
 			Error("Failed to allocate new slab: %v", err)
@@ -90,11 +90,11 @@ func (s *SlabAllocator) Free(start uint64) error {
 	}
 
 	if targetSlab == nil {
-		Debug("Address not found in slab cache, trying buddy allocator")
-		// Try buddy allocator if not found in slab cache
+		Debug("Address not found in slab cache, trying buddy hybrid")
+		// Try buddy hybrid if not found in slab cache
 		err := s.buddy.Free(start)
 		if err != nil {
-			Error("Failed to free memory from buddy allocator: %v", err)
+			Error("Failed to free memory from buddy hybrid: %v", err)
 			return err
 		}
 		return nil
@@ -158,6 +158,6 @@ func (s *SlabAllocator) GetUsedSize() uint64 {
 	for _, slab := range s.slabs {
 		used += slab.used
 	}
-	Debug("Slab allocator used size: %d bytes", used)
+	Debug("Slab hybrid used size: %d bytes", used)
 	return used
 }

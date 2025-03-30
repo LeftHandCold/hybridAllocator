@@ -7,7 +7,6 @@ test:
 
 clean:
 	go clean
-	rm -f hsAllocator
 
 run:
 	go run main.go 

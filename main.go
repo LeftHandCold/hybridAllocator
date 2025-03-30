@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"hybridAllocator/hybrid"
+	"log"
 	"math/rand"
+	"os"
+	"runtime/pprof"
 	"sync"
 	"time"
-
-	"github.com/shenjiangwei/hsAllocator/hsAllocator"
 )
 
 const (
@@ -38,7 +40,7 @@ func generateRandomSize() uint64 {
 }
 
 func runTest(iteration int) TestResult {
-	allocator := hsAllocator.NewAllocator()
+	allocator := hybrid.NewAllocator()
 	allocated := make(map[uint64]uint64) // start -> size
 
 	var totalWritten uint64
@@ -81,13 +83,13 @@ func runTest(iteration int) TestResult {
 						if count > 10*1024*1024*1024 {
 							used := allocator.GetUsedSize()
 							use := float64(used) / float64(TotalSize) * 100
-							hsAllocator.Info("count %d, totalWritten %d, writeCount %d delete Count %d, Duration %v,used %.2f%%",
+							hybrid.Info("count %d, totalWritten %d, writeCount %d delete Count %d, Duration %v,used %.2f%%",
 								count, totalWritten, writeCount, deleteCount, time.Since(countStart), use)
 							count = 0
 						}
 						mutex.Unlock()
 					} else {
-						if err == hsAllocator.ErrNoSpaceAvailable {
+						if err == hybrid.ErrNoSpaceAvailable {
 							err = nil
 							break
 						}
@@ -140,6 +142,22 @@ func runTest(iteration int) TestResult {
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
+	cpuProfile, err := os.Create("cpu.prof")
+	if err != nil {
+		log.Fatal("could not create CPU profile: ", err)
+	}
+	defer cpuProfile.Close()
+
+	if err := pprof.StartCPUProfile(cpuProfile); err != nil {
+		log.Fatal("could not start CPU profile: ", err)
+	}
+	defer pprof.StopCPUProfile()
+
+	memProfile, err := os.Create("mem.prof")
+	if err != nil {
+		log.Fatal("could not create memory profile: ", err)
+	}
+	defer memProfile.Close()
 
 	fmt.Printf("Starting disk allocation test with %d iterations\n", TestIteration)
 	fmt.Println("Total disk size:", TotalSize/1024/1024/1024, "GB")
@@ -162,7 +180,9 @@ func main() {
 		fmt.Printf("  Duration: %v\n", result.TotalDuration)
 		fmt.Println()
 	}
-
+	if err := pprof.WriteHeapProfile(memProfile); err != nil {
+		log.Fatal("could not write memory profile: ", err)
+	}
 	// Calculate averages
 	var avgUsage, avgMemory, avgDuration float64
 	for _, r := range results {

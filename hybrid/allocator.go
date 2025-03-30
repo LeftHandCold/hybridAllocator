@@ -1,17 +1,17 @@
-// Package hsAllocator provides disk space allocation management
-package hsAllocator
+// Package hybrid provides disk space allocation management
+package hybrid
 
 import (
 	"sync"
 	"unsafe"
 )
 
-// NewAllocator creates a new memory allocator instance
+// NewAllocator creates a new memory hybrid instance
 func NewAllocator() *Allocator {
-	Debug("Creating new allocator")
+	Debug("Creating new hybrid")
 	buddy := NewBuddyAllocator()
 
-	// Initialize buddy allocator with max block
+	// Initialize buddy hybrid with max block
 	maxBlock := &Block{
 		start:  0,
 		size:   MaxBlockSize,
@@ -44,7 +44,7 @@ func (a *Allocator) Allocate(size uint64) (uint64, error) {
 	if size <= SlabMaxSize {
 		start, err := a.slab.Allocate(size)
 		if err == ErrSlabFull {
-			Debug("Slab is full, trying buddy allocator")
+			Debug("Slab is full, trying buddy hybrid")
 			return a.buddy.Allocate(size)
 		}
 		if err != nil {
@@ -70,7 +70,7 @@ func (a *Allocator) Free(start uint64, size uint64) error {
 	if size <= SlabMaxSize {
 		err := a.slab.Free(start)
 		if err == ErrSlabNotFound {
-			Debug("Address not found in slab, trying buddy allocator")
+			Debug("Address not found in slab, trying buddy hybrid")
 			return a.buddy.Free(start)
 		}
 		if err != nil {
@@ -97,16 +97,16 @@ func (a *Allocator) GetUsedSize() uint64 {
 	return used
 }
 
-// GetMemoryUsage returns the memory overhead of the allocator
+// GetMemoryUsage returns the memory overhead of the hybrid
 func (a *Allocator) GetMemoryUsage() uint64 {
 	var size uint64
-	// Calculate buddy allocator memory usage
+	// Calculate buddy hybrid memory usage
 	size += uint64(unsafe.Sizeof([]*Block{})) * uint64(len(a.buddy.blocks))
 	for _, blocks := range a.buddy.blocks {
 		size += uint64(unsafe.Sizeof(&Block{})) * uint64(len(blocks))
 	}
 
-	// Calculate slab allocator memory usage
+	// Calculate slab hybrid memory usage
 	size += uint64(unsafe.Sizeof(&Slab{})) * uint64(len(a.slab.cache))
 	for _, slabs := range a.slab.cache {
 		for _, slab := range slabs {

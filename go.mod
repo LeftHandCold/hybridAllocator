@@ -1,3 +1,3 @@
-module github.com/shenjiangwei/hsAllocator
+module hybridAllocator
 
 go 1.21

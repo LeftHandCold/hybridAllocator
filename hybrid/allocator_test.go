@@ -1,4 +1,4 @@
-package hsAllocator
+package hybrid
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 )
 
 func TestAllocator(t *testing.T) {
-	// Create a new allocator for testing
+	// Create a new hybrid for testing
 	allocator := NewAllocator()
 
 	// Test basic allocation and free

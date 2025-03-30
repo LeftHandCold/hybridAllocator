@@ -1,10 +1,10 @@
-package hsAllocator
+package hybrid
 
 import (
 	"math"
 )
 
-// NewBuddyAllocator creates a new buddy allocator
+// NewBuddyAllocator creates a new buddy hybrid
 func NewBuddyAllocator() *BuddyAllocator {
 	return &BuddyAllocator{
 		blocks:    [21][]*Block{},
@@ -60,8 +60,6 @@ func (b *BuddyAllocator) Allocate(size uint64) (uint64, error) {
 			b.allocated[block.start] = block
 			Debug("Allocated block of order %d at address %d, size %d", order, block.start, block.size)
 			return block.start, nil
-		} else {
-			Debug("len(b.blocks[i]) %d", len(b.blocks[i]), BuddyStartSize)
 		}
 	}
 
@@ -137,6 +135,6 @@ func (b *BuddyAllocator) GetUsedSize() uint64 {
 	for _, block := range b.allocated {
 		used += block.size
 	}
-	Debug("Buddy allocator used size: %d bytes", used)
+	Debug("Buddy hybrid used size: %d bytes", used)
 	return used
 }

@@ -1,5 +1,5 @@
-// Package hsAllocator provides disk space allocation management
-package hsAllocator
+// Package hybrid provides disk space allocation management
+package hybrid
 
 import (
 	"sync"
@@ -51,7 +51,7 @@ type SlabAllocator struct {
 	counts map[uint64]int
 }
 
-// Allocator is the main allocator combining buddy and slab systems
+// Allocator is the main hybrid combining buddy and slab systems
 type Allocator struct {
 	buddy *BuddyAllocator
 	slab  *SlabAllocator

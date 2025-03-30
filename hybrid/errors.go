@@ -1,5 +1,5 @@
-// Package hsAllocator provides disk space allocation management
-package hsAllocator
+// Package hybrid provides disk space allocation management
+package hybrid
 
 import "errors"
 
