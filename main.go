@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"hybridAllocator/hybrid"
+	"hybridAllocator/mpool"
 	"log"
 	"math/rand"
 	"os"
@@ -49,6 +50,13 @@ func generateRandomSize() uint64 {
 
 func runTest(iteration int) TestResult {
 	allocator := hybrid.NewAllocator()
+
+	memoryPool, err := mpool.NewMemoryPool(allocator)
+	if err != nil {
+		log.Fatalf("Failed to create memory pool: %v", err)
+	}
+	defer memoryPool.Close()
+
 	allocated := make(map[uint64]uint64) // start -> size
 	diskSize := allocator.GetTotalSize()
 
@@ -79,7 +87,7 @@ func runTest(iteration int) TestResult {
 				// Randomly decide whether to allocate or free
 				if rand.Float64() < 0.7 { // 70% chance to allocate
 					size := generateRandomSize()
-					start, err := allocator.Allocate(size)
+					start, err := memoryPool.Allocate(size)
 					if err == nil {
 						mutex.Lock()
 						allocated[start] = size
@@ -102,7 +110,6 @@ func runTest(iteration int) TestResult {
 
 							printThreshold += 10 * GB
 							startPrint = time.Now()
-
 						}
 						mutex.Unlock()
 					} else {
@@ -127,7 +134,7 @@ func runTest(iteration int) TestResult {
 						totalWritten -= size
 						deleteCount++
 						mutex.Unlock()
-						err := allocator.Free(start, size)
+						err := memoryPool.Free(start, size)
 						if err != nil {
 							panic(fmt.Sprintf("Failed to Free. offset: %d, err: %v", start, err))
 						}
