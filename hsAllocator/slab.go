@@ -92,7 +92,12 @@ func (s *SlabAllocator) Free(start uint64) error {
 	if targetSlab == nil {
 		Debug("Address not found in slab cache, trying buddy allocator")
 		// Try buddy allocator if not found in slab cache
-		return s.buddy.Free(start)
+		err := s.buddy.Free(start)
+		if err != nil {
+			Error("Failed to free memory from buddy allocator: %v", err)
+			return err
+		}
+		return nil
 	}
 
 	Debug("Found slab at address %d with size %d", targetSlab.start, targetSize)

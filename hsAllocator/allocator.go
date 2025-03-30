@@ -92,7 +92,7 @@ func (a *Allocator) Free(start uint64, size uint64) error {
 
 // GetUsedSize returns the total size of allocated memory
 func (a *Allocator) GetUsedSize() uint64 {
-	used := a.buddy.GetUsedSize() + a.slab.GetUsedSize()
+	used := a.buddy.GetUsedSize()
 	Debug("Total used size: %d bytes", used)
 	return used
 }

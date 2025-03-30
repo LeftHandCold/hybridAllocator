@@ -14,11 +14,11 @@ func NewBuddyAllocator() *BuddyAllocator {
 
 // getOrder calculates the order value for a given size
 func getOrder(size uint64) int {
-	if size < MinBlockSize {
+	if size < BuddyStartSize {
 		return 0
 	}
-	size = (size + MinBlockSize - 1) & ^uint64(MinBlockSize-1) // Round up to nearest MinBlockSize
-	order := int(math.Log2(float64(size) / float64(MinBlockSize)))
+	size = (size + BuddyStartSize - 1) & ^uint64(BuddyStartSize-1) // Round up to nearest MinBlockSize
+	order := int(math.Log2(float64(size) / float64(BuddyStartSize)))
 	Debug("Calculated order %d for size %d", order, size)
 	return order
 }
@@ -46,20 +46,22 @@ func (b *BuddyAllocator) Allocate(size uint64) (uint64, error) {
 				Debug("Splitting block of order %d into smaller blocks", i)
 				for j := i - 1; j >= order; j-- {
 					newBlock := &Block{
-						start:  block.start + (1<<uint(j))*MinBlockSize,
-						size:   (1 << uint(j)) * MinBlockSize,
+						start:  block.start + (1<<uint(j))*BuddyStartSize,
+						size:   (1 << uint(j)) * BuddyStartSize,
 						isFree: true,
 					}
-					block.size = (1 << uint(j)) * MinBlockSize
+					block.size = (1 << uint(j)) * BuddyStartSize
 					b.blocks[j] = append(b.blocks[j], newBlock)
 					Debug("Created new block of order %d at address %d", j, newBlock.start)
 				}
 			}
 
 			block.isFree = false
-			b.allocated[block.start] = block // 记录已分配的块
+			b.allocated[block.start] = block
 			Debug("Allocated block of order %d at address %d, size %d", order, block.start, block.size)
 			return block.start, nil
+		} else {
+			Debug("len(b.blocks[i]) %d", len(b.blocks[i]), BuddyStartSize)
 		}
 	}
 
@@ -83,11 +85,9 @@ func (b *BuddyAllocator) Free(start uint64) error {
 	order := getOrder(block.size)
 	Debug("Found block of order %d at address %d", order, start)
 
-	delete(b.allocated, start)
-
 	// Try to merge with buddy blocks
 	for {
-		buddyStart := start ^ (1 << uint(order) * MinBlockSize)
+		buddyStart := start ^ (1 << uint(order) * BuddyStartSize)
 		Debug("Looking for buddy block at address %d", buddyStart)
 		var buddyIndex int = -1
 		for i, buddyBlock := range b.blocks[order] {
@@ -102,7 +102,7 @@ func (b *BuddyAllocator) Free(start uint64) error {
 			// Add current block as free
 			newBlock := &Block{
 				start:  start,
-				size:   (1 << uint(order)) * MinBlockSize,
+				size:   (1 << uint(order)) * BuddyStartSize,
 				isFree: true,
 			}
 			b.blocks[order] = append(b.blocks[order], newBlock)
@@ -123,6 +123,7 @@ func (b *BuddyAllocator) Free(start uint64) error {
 		}
 	}
 
+	delete(b.allocated, block.start)
 	Debug("Successfully freed block at address %d", start)
 	return nil
 }

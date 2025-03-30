@@ -13,7 +13,7 @@ const (
 	TotalSize     = 1024 * 1024 * 1024 * 1024 // 1TB
 	MinBlockSize  = 4 * 1024                  // 4KB
 	MaxBlockSize  = 4 * 1024 * 1024           // 4MB
-	TestIteration = 3
+	TestIteration = 1
 )
 
 // TestResult stores test iteration results
@@ -27,18 +27,32 @@ type TestResult struct {
 	TotalDuration time.Duration
 }
 
+func p2roundup(x uint64, align uint64) uint64 {
+	return -(-x & -align)
+}
+
+func generateRandomSize() uint64 {
+	maxBlocks := MaxBlockSize / 512
+	numBlocks := uint64(rand.Intn(maxBlocks)) + 1
+	return p2roundup(numBlocks*512, 4096)
+}
+
 func runTest(iteration int) TestResult {
 	allocator := hsAllocator.NewAllocator()
 	allocated := make(map[uint64]uint64) // start -> size
+
+	var totalWritten uint64
+	var writeCount, deleteCount int
+	var count uint64 = 0
 	var mutex sync.Mutex
 	var wg sync.WaitGroup
 
 	startTime := time.Now()
 	ops := 0
-	maxOps := 1000000
-
+	maxOps := 2000000
+	var countStart time.Time
 	// Start multiple goroutines for concurrent operations
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 32; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -53,12 +67,31 @@ func runTest(iteration int) TestResult {
 
 				// Randomly decide whether to allocate or free
 				if rand.Float64() < 0.7 { // 70% chance to allocate
-					size := uint64(rand.Int63n(MaxBlockSize-MinBlockSize+1) + int64(MinBlockSize))
+					size := generateRandomSize()
 					start, err := allocator.Allocate(size)
 					if err == nil {
 						mutex.Lock()
+						if count == 0 {
+							countStart = time.Now()
+						}
 						allocated[start] = size
+						totalWritten += size
+						writeCount++
+						count += size
+						if count > 10*1024*1024*1024 {
+							used := allocator.GetUsedSize()
+							use := float64(used) / float64(TotalSize) * 100
+							hsAllocator.Info("count %d, totalWritten %d, writeCount %d delete Count %d, Duration %v,used %.2f%%",
+								count, totalWritten, writeCount, deleteCount, time.Since(countStart), use)
+							count = 0
+						}
 						mutex.Unlock()
+					} else {
+						if err == hsAllocator.ErrNoSpaceAvailable {
+							err = nil
+							break
+						}
+						panic(fmt.Sprintf("Failed to Allocate. err: %v", err))
 					}
 				} else { // 30% chance to free
 					mutex.Lock()
@@ -72,8 +105,13 @@ func runTest(iteration int) TestResult {
 						start := keys[idx]
 						size := allocated[start]
 						delete(allocated, start)
+						totalWritten -= size
+						deleteCount++
 						mutex.Unlock()
-						allocator.Free(start, size)
+						err := allocator.Free(start, size)
+						if err != nil {
+							panic(fmt.Sprintf("Failed to Free. offset: %d, err: %v", start, err))
+						}
 					} else {
 						mutex.Unlock()
 					}
@@ -91,8 +129,8 @@ func runTest(iteration int) TestResult {
 
 	return TestResult{
 		Iteration:     iteration,
-		TotalWrites:   uint64(len(allocated)),
-		TotalFrees:    uint64(maxOps - len(allocated)),
+		TotalWrites:   uint64(writeCount),
+		TotalFrees:    uint64(deleteCount),
 		MaxUsage:      float64(used) / float64(TotalSize) * 100,
 		FinalUsage:    float64(used) / float64(TotalSize) * 100,
 		MemoryUsage:   memoryUsage,
