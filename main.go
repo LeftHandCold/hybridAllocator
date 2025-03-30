@@ -12,9 +12,13 @@ import (
 )
 
 const (
-	TotalSize     = 1024 * 1024 * 1024 * 1024 // 1TB
-	MinBlockSize  = 4 * 1024                  // 4KB
-	MaxBlockSize  = 4 * 1024 * 1024           // 4MB
+	TB = 1024 * 1024 * 1024 * 1024
+	GB = 1024 * 1024 * 1024
+	MB = 1024 * 1024
+	KB = 1024
+
+	MinBlockSize  = 4 * KB // 4KB
+	MaxBlockSize  = 4 * MB // 4MB
 	TestIteration = 1
 )
 
@@ -36,23 +40,28 @@ func p2roundup(x uint64, align uint64) uint64 {
 func generateRandomSize() uint64 {
 	maxBlocks := MaxBlockSize / 512
 	numBlocks := uint64(rand.Intn(maxBlocks)) + 1
-	return p2roundup(numBlocks*512, 4096)
+	size := numBlocks * 512
+	if size < 4096 {
+		p2roundup(numBlocks*512, 4096)
+	}
+	return size
 }
 
 func runTest(iteration int) TestResult {
 	allocator := hybrid.NewAllocator()
 	allocated := make(map[uint64]uint64) // start -> size
+	diskSize := allocator.GetTotalSize()
 
-	var totalWritten uint64
+	var totalWritten, totalAllocated uint64
 	var writeCount, deleteCount int
-	var count uint64 = 0
+	var printThreshold uint64 = 10 * GB
 	var mutex sync.Mutex
 	var wg sync.WaitGroup
 
 	startTime := time.Now()
 	ops := 0
 	maxOps := 2000000
-	var countStart time.Time
+	startPrint := time.Now()
 	// Start multiple goroutines for concurrent operations
 	for i := 0; i < 32; i++ {
 		wg.Add(1)
@@ -73,19 +82,27 @@ func runTest(iteration int) TestResult {
 					start, err := allocator.Allocate(size)
 					if err == nil {
 						mutex.Lock()
-						if count == 0 {
-							countStart = time.Now()
-						}
 						allocated[start] = size
 						totalWritten += size
+						totalAllocated += size
 						writeCount++
-						count += size
-						if count > 10*1024*1024*1024 {
+						if totalAllocated >= printThreshold {
 							used := allocator.GetUsedSize()
-							use := float64(used) / float64(TotalSize) * 100
-							hybrid.Info("count %d, totalWritten %d, writeCount %d delete Count %d, Duration %v,used %.2f%%",
-								count, totalWritten, writeCount, deleteCount, time.Since(countStart), use)
-							count = 0
+							use := float64(used) / float64(diskSize) * 100
+							elapsed := time.Since(startPrint)
+							hybrid.Info(
+								"%d MB allocated, cumulative writes: %d, cumulative frees: %d\n"+
+									"Duration: %v, Space usage: %.5f%%\n"+
+									"-----------------------------------------",
+								totalAllocated/MB,
+								writeCount,
+								deleteCount,
+								elapsed.Round(time.Millisecond),
+								use)
+
+							printThreshold += 10 * GB
+							startPrint = time.Now()
+
 						}
 						mutex.Unlock()
 					} else {
@@ -127,14 +144,15 @@ func runTest(iteration int) TestResult {
 
 	// Calculate usage statistics
 	used := allocator.GetUsedSize()
+	hybrid.Info("used is %v", used)
 	memoryUsage := allocator.GetMemoryUsage()
 
 	return TestResult{
 		Iteration:     iteration,
 		TotalWrites:   uint64(writeCount),
 		TotalFrees:    uint64(deleteCount),
-		MaxUsage:      float64(used) / float64(TotalSize) * 100,
-		FinalUsage:    float64(used) / float64(TotalSize) * 100,
+		MaxUsage:      float64(used) / float64(diskSize) * 100,
+		FinalUsage:    float64(used) / float64(diskSize) * 100,
 		MemoryUsage:   memoryUsage,
 		TotalDuration: duration,
 	}
@@ -160,7 +178,6 @@ func main() {
 	defer memProfile.Close()
 
 	fmt.Printf("Starting disk allocation test with %d iterations\n", TestIteration)
-	fmt.Println("Total disk size:", TotalSize/1024/1024/1024, "GB")
 	fmt.Println("Min block size:", MinBlockSize/1024, "KB")
 	fmt.Println("Max block size:", MaxBlockSize/1024/1024, "MB")
 	fmt.Println()
@@ -174,8 +191,8 @@ func main() {
 		fmt.Printf("Iteration %d results:\n", i+1)
 		fmt.Printf("  Total writes: %d\n", result.TotalWrites)
 		fmt.Printf("  Total frees: %d\n", result.TotalFrees)
-		fmt.Printf("  Max usage: %.2f%%\n", result.MaxUsage)
-		fmt.Printf("  Final usage: %.2f%%\n", result.FinalUsage)
+		fmt.Printf("  Max usage: %.5f%%\n", result.MaxUsage)
+		fmt.Printf("  Final usage: %.5f%%\n", result.FinalUsage)
 		fmt.Printf("  Memory usage: %d bytes\n", result.MemoryUsage)
 		fmt.Printf("  Duration: %v\n", result.TotalDuration)
 		fmt.Println()
@@ -195,7 +212,7 @@ func main() {
 	avgDuration /= float64(len(results))
 
 	fmt.Println("Average results:")
-	fmt.Printf("  Average usage: %.2f%%\n", avgUsage)
+	fmt.Printf("  Average usage: %.5f%%\n", avgUsage)
 	fmt.Printf("  Average memory usage: %.2f bytes\n", avgMemory)
 	fmt.Printf("  Average duration: %.2f seconds\n", avgDuration)
 }

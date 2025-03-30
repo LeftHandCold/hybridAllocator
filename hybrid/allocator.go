@@ -97,6 +97,13 @@ func (a *Allocator) GetUsedSize() uint64 {
 	return used
 }
 
+func (a *Allocator) GetTotalSize() uint64 {
+	base := 20
+	offset := MaxOrder - base
+
+	return 1 << (40 + uint(offset))
+}
+
 // GetMemoryUsage returns the memory overhead of the hybrid
 func (a *Allocator) GetMemoryUsage() uint64 {
 	var size uint64

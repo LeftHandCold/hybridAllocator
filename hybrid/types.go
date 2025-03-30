@@ -6,12 +6,11 @@ import (
 )
 
 const (
-	// System constants
 	MinBlockSize   = 4 * 1024                  // 4KB
 	MaxBlockSize   = 1024 * 1024 * 1024 * 1024 // 1TB
 	BuddyStartSize = 1024 * 1024               // 1MB
 	SlabMaxSize    = 1024 * 1024               // 1MB
-	MaxOrder       = 20                        // Maximum order value, supports up to 1TB
+	MaxOrder       = 16                        // Maximum order value, supports up to 1TB
 	SlabCacheSize  = 32                        // Size of each slab cache
 )
 
@@ -27,10 +26,9 @@ type Block struct {
 
 // BuddyAllocator manages memory blocks using buddy system
 type BuddyAllocator struct {
-	blocks    [21][]*Block // MaxOrder + 1 = 21
+	blocks    [MaxOrder + 1][]*Block // MaxOrder + 1 = 21
 	mutex     sync.RWMutex
-	totalSize uint64
-	allocated map[uint64]*Block // 用于跟踪已分配的块
+	allocated map[uint64]*Block // track allocated blocks
 }
 
 // Slab represents a slab cache

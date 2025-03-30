@@ -83,7 +83,7 @@ func TestAllocator(t *testing.T) {
 		// Check usage
 		used := allocator.GetUsedSize()
 		utilization := float64(used) / float64(MaxBlockSize) * 100
-		t.Logf("Space utilization: %.2f%%", utilization)
+		t.Logf("Space utilization: %.5f%%", utilization)
 
 		// Free all space
 		for i, start := range addresses {
