@@ -6,12 +6,10 @@ import (
 )
 
 const (
-	MinBlockSize   = 4 * 1024                  // 4KB
 	MaxBlockSize   = 1024 * 1024 * 1024 * 1024 // 1TB
 	BuddyStartSize = 1024 * 1024               // 1MB
 	SlabMaxSize    = 1024 * 1024               // 1MB
-	MaxOrder       = 16                        // Maximum order value, supports up to 1TB
-	SlabCacheSize  = 32                        // Size of each slab cache
+	MaxOrder       = 20                        // Maximum order value, supports up to 1TB
 )
 
 // Block represents a memory block

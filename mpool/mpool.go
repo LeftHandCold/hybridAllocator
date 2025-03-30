@@ -11,9 +11,9 @@ const (
 	MB = 1024 * 1024
 	KB = 1024
 
-	SmallPoolSize  = 2000 // Small pool size (4KB-64KB)
-	MediumPoolSize = 1000 // Medium pool size (64KB-1MB)
-	LargePoolSize  = 500  // Large pool size (1MB-4MB)
+	SmallPoolSize  = 20000 // Small pool size (4KB-64KB)
+	MediumPoolSize = 10000 // Medium pool size (64KB-1MB)
+	LargePoolSize  = 5000  // Large pool size (1MB-4MB)
 )
 
 // PoolStats represents memory pool statistics

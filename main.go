@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"hybridAllocator/hybrid"
 	"hybridAllocator/mpool"
@@ -8,6 +9,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"runtime"
 	"runtime/pprof"
 	"strings"
 	"sync"
@@ -36,6 +38,90 @@ type TestResult struct {
 	FinalUsage    float64
 	MemoryUsage   uint64
 	TotalDuration time.Duration
+}
+
+type StressTest struct {
+	allocator *hybrid.Allocator
+	pool      *mpool.MemoryPool
+	allocated map[uint64]uint64 // start -> size
+	mu        sync.Mutex
+}
+
+func NewStressTest() *StressTest {
+	allocator := hybrid.NewAllocator()
+	mp, _ := mpool.NewMemoryPool(allocator)
+	return &StressTest{
+		allocator: allocator,
+		pool:      mp,
+		allocated: make(map[uint64]uint64),
+	}
+}
+
+func (st *StressTest) runStressTest(targetSize uint64) {
+	log.Printf("Starting stress test with target size: %d TB", targetSize/(1024*1024*1024*1024))
+
+	startTime := time.Now()
+	totalWritten := uint64(0)
+	iteration := 0
+
+	for totalWritten < targetSize {
+		start := time.Now()
+		iteration++
+		log.Printf("Iteration %d: Starting allocation phase", iteration)
+		used := uint64(0)
+		for {
+			size := generateRandomSize()
+			start, err := st.allocator.Allocate(size)
+			if err != nil {
+				if strings.Contains(err.Error(), "no space available") {
+					err = nil
+					used = st.allocator.GetUsedSize()
+					break
+				}
+				panic(fmt.Sprintf("Failed to Allocate. err: %v", err))
+			}
+
+			st.mu.Lock()
+			st.allocated[start] = size
+			st.mu.Unlock()
+			totalWritten += size
+		}
+
+		releaseRatio := 0.3 + rand.Float64()*0.2 // 30%-50%
+		st.mu.Lock()
+		toRelease := make([]uint64, 0, len(st.allocated))
+		for start := range st.allocated {
+			toRelease = append(toRelease, start)
+		}
+		st.mu.Unlock()
+
+		releaseCount := int(float64(len(toRelease)) * releaseRatio)
+		for i := 0; i < releaseCount; i++ {
+			idx := rand.Intn(len(toRelease))
+			start := toRelease[idx]
+
+			st.mu.Lock()
+			size := st.allocated[start]
+			delete(st.allocated, start)
+			st.mu.Unlock()
+
+			st.allocator.Free(start, size)
+			toRelease[idx] = toRelease[len(toRelease)-1]
+			toRelease = toRelease[:len(toRelease)-1]
+		}
+
+		var m runtime.MemStats
+		runtime.ReadMemStats(&m)
+		duration := time.Since(start)
+		usage := float64(used) / float64(st.allocator.GetTotalSize()) * 100
+		log.Printf("Iteration %d completed:", iteration)
+		log.Printf("  Total written: %d TB", totalWritten/(1024*1024*1024*1024))
+		log.Printf("  usage: %.5f%%\n", usage)
+		log.Printf("  Current memory usage: %d MB", m.Alloc/1024/1024)
+		log.Printf("  Duration: %v", duration)
+		log.Printf("  Average write speed: %.2f MB/s", float64(totalWritten)/time.Since(startTime).Seconds()/1024/1024)
+	}
+	log.Printf("  Total Duration: %v", time.Since(startTime))
 }
 
 func p2roundup(x uint64, align uint64) uint64 {
@@ -210,7 +296,11 @@ func runTest(iteration int) TestResult {
 }
 
 func main() {
+	testMode := flag.String("mode", "basic", "Test mode: basic, stress10t, stress100t")
+	flag.Parse()
+
 	rand.Seed(time.Now().UnixNano())
+
 	cpuProfile, err := os.Create("cpu.prof")
 	if err != nil {
 		log.Fatal("could not create CPU profile: ", err)
@@ -228,7 +318,26 @@ func main() {
 	}
 	defer memProfile.Close()
 
-	fmt.Printf("Starting disk allocation test with %d iterations\n", TestIteration)
+	switch *testMode {
+	case "basic":
+		runBasicTest()
+	case "stress10t":
+		runStressTest10T()
+	case "stress100t":
+		runStressTest100T()
+	default:
+		fmt.Printf("Unknown test mode: %s\n", *testMode)
+		fmt.Println("Available modes: basic, stress10t, stress100t")
+		os.Exit(1)
+	}
+
+	if err := pprof.WriteHeapProfile(memProfile); err != nil {
+		log.Fatal("could not write memory profile: ", err)
+	}
+}
+
+func runBasicTest() {
+	fmt.Printf("Starting basic disk allocation test with %d iterations\n", TestIteration)
 	fmt.Println("Min block size:", MinBlockSize/1024, "KB")
 	fmt.Println("Max block size:", MaxBlockSize/1024/1024, "MB")
 	fmt.Println()
@@ -249,10 +358,6 @@ func main() {
 		fmt.Println()
 	}
 
-	if err := pprof.WriteHeapProfile(memProfile); err != nil {
-		log.Fatal("could not write memory profile: ", err)
-	}
-
 	// Calculate averages
 	var avgUsage, avgMemory, avgDuration float64
 	for _, r := range results {
@@ -268,4 +373,16 @@ func main() {
 	fmt.Printf("  Average usage: %.5f%%\n", avgUsage)
 	fmt.Printf("  Average memory usage: %.2f bytes\n", avgMemory)
 	fmt.Printf("  Average duration: %.2f seconds\n", avgDuration)
+}
+
+func runStressTest10T() {
+	log.Println("Starting 10TB stress test...")
+	st := NewStressTest()
+	st.runStressTest(10 * TB)
+}
+
+func runStressTest100T() {
+	log.Println("Starting 100TB stress test...")
+	st := NewStressTest()
+	st.runStressTest(100 * TB)
 }
