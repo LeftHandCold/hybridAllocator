@@ -1,7 +1,6 @@
 package hybrid
 
 import (
-	"log"
 	"math"
 )
 
@@ -60,14 +59,10 @@ func (b *BuddyAllocator) Allocate(size uint64) (uint64, error) {
 			block.isFree = false
 			b.allocated[block.start] = block
 			Debug("Allocated block of order %d at address %d, size %d", order, block.start, block.size)
-			if block.start+block.size > 512*1024*1024*1024 {
-				log.Fatal("dsfdsfdsfdsfdsf block.size is %d , size %d", block.start, block.size)
-			}
 			return block.start, nil
 		}
 	}
 
-	Error("No space available for allocation of size %d", size)
 	return 0, ErrNoSpaceAvailable
 }
 

@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"hybridAllocator/hybrid"
 	"hybridAllocator/mpool"
+	"hybridAllocator/rpc"
 	"log"
 	"math/rand"
 	"os"
 	"runtime/pprof"
+	"strings"
 	"sync"
 	"time"
 )
@@ -20,7 +22,9 @@ const (
 
 	MinBlockSize  = 4 * KB // 4KB
 	MaxBlockSize  = 4 * MB // 4MB
-	TestIteration = 1
+	TestIteration = 2
+
+	ServerAddress = "localhost:1234"
 )
 
 // TestResult stores test iteration results
@@ -49,13 +53,53 @@ func generateRandomSize() uint64 {
 }
 
 func runTest(iteration int) TestResult {
-	allocator := hybrid.NewAllocator()
+	var allocator *hybrid.Allocator
+	var memoryPool *mpool.MemoryPool
+	var err error
 
-	memoryPool, err := mpool.NewMemoryPool(allocator)
+	var Allocate func(uint64) (uint64, error)
+	var Free func(uint64, uint64) error
+	var GetUsedSize func() uint64
+	var GetMemoryUsage func() uint64
+
+	if iteration == 0 {
+		allocator = hybrid.NewAllocator()
+		memoryPool, err = mpool.NewMemoryPool(allocator)
+		Allocate = memoryPool.Allocate
+		Free = memoryPool.Free
+		GetUsedSize = allocator.GetUsedSize
+		GetMemoryUsage = allocator.GetMemoryUsage
+		defer memoryPool.Close()
+	} else {
+		server, err := rpc.NewServer()
+		if err != nil {
+			log.Fatalf("Failed to create server: %v", err)
+		}
+		defer server.Close()
+
+		go func() {
+			if err := server.Start(ServerAddress); err != nil {
+				log.Printf("Server error: %v", err)
+			}
+		}()
+
+		time.Sleep(time.Second)
+
+		client, err := rpc.NewClient(1, ServerAddress)
+		if err != nil {
+			log.Fatalf("Failed to create client: %v", err)
+		}
+		defer client.Close()
+
+		Allocate = client.Allocate
+		Free = client.Free
+		GetUsedSize = server.GetUsedSize
+		GetMemoryUsage = server.GetMemoryUsage
+	}
+
 	if err != nil {
 		log.Fatalf("Failed to create memory pool: %v", err)
 	}
-	defer memoryPool.Close()
 
 	allocated := make(map[uint64]uint64) // start -> size
 	diskSize := allocator.GetTotalSize()
@@ -87,7 +131,7 @@ func runTest(iteration int) TestResult {
 				// Randomly decide whether to allocate or free
 				if rand.Float64() < 0.7 { // 70% chance to allocate
 					size := generateRandomSize()
-					start, err := memoryPool.Allocate(size)
+					start, err := Allocate(size)
 					if err == nil {
 						mutex.Lock()
 						allocated[start] = size
@@ -95,7 +139,7 @@ func runTest(iteration int) TestResult {
 						totalAllocated += size
 						writeCount++
 						if totalAllocated >= printThreshold {
-							used := allocator.GetUsedSize()
+							used := GetUsedSize()
 							use := float64(used) / float64(diskSize) * 100
 							elapsed := time.Since(startPrint)
 							hybrid.Info(
@@ -113,7 +157,7 @@ func runTest(iteration int) TestResult {
 						}
 						mutex.Unlock()
 					} else {
-						if err == hybrid.ErrNoSpaceAvailable {
+						if strings.Contains(err.Error(), "no space available") {
 							err = nil
 							break
 						}
@@ -134,7 +178,7 @@ func runTest(iteration int) TestResult {
 						totalWritten -= size
 						deleteCount++
 						mutex.Unlock()
-						err := memoryPool.Free(start, size)
+						err := Free(start, size)
 						if err != nil {
 							panic(fmt.Sprintf("Failed to Free. offset: %d, err: %v", start, err))
 						}
@@ -150,9 +194,9 @@ func runTest(iteration int) TestResult {
 	duration := time.Since(startTime)
 
 	// Calculate usage statistics
-	used := allocator.GetUsedSize()
-	hybrid.Info("used is %v", used)
-	memoryUsage := allocator.GetMemoryUsage()
+	used := GetUsedSize()
+	hybrid.Info("used: %v", used)
+	memoryUsage := GetMemoryUsage()
 
 	return TestResult{
 		Iteration:     iteration,
@@ -192,7 +236,7 @@ func main() {
 	var results []TestResult
 	for i := 0; i < TestIteration; i++ {
 		fmt.Printf("Running iteration %d...\n", i+1)
-		result := runTest(i + 1)
+		result := runTest(i)
 		results = append(results, result)
 
 		fmt.Printf("Iteration %d results:\n", i+1)
@@ -204,9 +248,11 @@ func main() {
 		fmt.Printf("  Duration: %v\n", result.TotalDuration)
 		fmt.Println()
 	}
+
 	if err := pprof.WriteHeapProfile(memProfile); err != nil {
 		log.Fatal("could not write memory profile: ", err)
 	}
+
 	// Calculate averages
 	var avgUsage, avgMemory, avgDuration float64
 	for _, r := range results {

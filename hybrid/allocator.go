@@ -57,7 +57,6 @@ func (a *Allocator) Allocate(size uint64) (uint64, error) {
 
 	start, err := a.buddy.Allocate(size)
 	if err != nil {
-		Error("Buddy allocation failed: %v", err)
 		return 0, err
 	}
 	Debug("Allocated %d bytes from buddy at address %d", size, start)
