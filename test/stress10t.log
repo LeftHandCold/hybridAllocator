@@ -1,0 +1,195 @@
+go run main.go -mode stress10t
+2025/03/30 20:53:35 Starting 10TB stress test...
+2025/03/30 20:53:35 Starting stress test with target size: 10 TB
+2025/03/30 20:53:35 Iteration 1: Starting allocation phase
+2025/03/30 20:53:48 Iteration 1 completed:
+2025/03/30 20:53:48   Total written: 0 TB
+2025/03/30 20:53:48   usage: 100.00000%
+2025/03/30 20:53:48   Current memory usage: 118 MB
+2025/03/30 20:53:48   Duration: 12.948786334s
+2025/03/30 20:53:48   Average write speed: 72045.18 MB/s
+2025/03/30 20:53:48 Iteration 2: Starting allocation phase
+2025/03/30 20:54:10 Iteration 2 completed:
+2025/03/30 20:54:10   Total written: 1 TB
+2025/03/30 20:54:10   usage: 100.00000%
+2025/03/30 20:54:10   Current memory usage: 112 MB
+2025/03/30 20:54:10   Duration: 22.704433042s
+2025/03/30 20:54:10   Average write speed: 34514.42 MB/s
+2025/03/30 20:54:10 Iteration 3: Starting allocation phase
+2025/03/30 20:54:23 Iteration 3 completed:
+2025/03/30 20:54:23   Total written: 1 TB
+2025/03/30 20:54:23   usage: 99.99990%
+2025/03/30 20:54:23   Current memory usage: 100 MB
+2025/03/30 20:54:23   Duration: 12.543372833s
+2025/03/30 20:54:23   Average write speed: 34648.01 MB/s
+2025/03/30 20:54:23 Iteration 4: Starting allocation phase
+2025/03/30 20:54:41 Iteration 4 completed:
+2025/03/30 20:54:41   Total written: 1 TB
+2025/03/30 20:54:41   usage: 99.99981%
+2025/03/30 20:54:41   Current memory usage: 80 MB
+2025/03/30 20:54:41   Duration: 18.710655417s
+2025/03/30 20:54:41   Average write speed: 29251.46 MB/s
+2025/03/30 20:54:41 Iteration 5: Starting allocation phase
+2025/03/30 20:55:03 Iteration 5 completed:
+2025/03/30 20:55:03   Total written: 2 TB
+2025/03/30 20:55:03   usage: 99.99971%
+2025/03/30 20:55:03   Current memory usage: 125 MB
+2025/03/30 20:55:03   Duration: 21.92563475s
+2025/03/30 20:55:03   Average write speed: 26322.75 MB/s
+2025/03/30 20:55:03 Iteration 6: Starting allocation phase
+2025/03/30 20:55:27 Iteration 6 completed:
+2025/03/30 20:55:27   Total written: 2 TB
+2025/03/30 20:55:27   usage: 100.00000%
+2025/03/30 20:55:27   Current memory usage: 103 MB
+2025/03/30 20:55:27   Duration: 23.119750042s
+2025/03/30 20:55:27   Average write speed: 24689.40 MB/s
+2025/03/30 20:55:27 Iteration 7: Starting allocation phase
+2025/03/30 20:55:51 Iteration 7 completed:
+2025/03/30 20:55:51   Total written: 3 TB
+2025/03/30 20:55:51   usage: 99.99990%
+2025/03/30 20:55:51   Current memory usage: 78 MB
+2025/03/30 20:55:51   Duration: 24.1810705s
+2025/03/30 20:55:51   Average write speed: 23440.42 MB/s
+2025/03/30 20:55:51 Iteration 8: Starting allocation phase
+2025/03/30 20:56:14 Iteration 8 completed:
+2025/03/30 20:56:14   Total written: 3 TB
+2025/03/30 20:56:14   usage: 100.00000%
+2025/03/30 20:56:14   Current memory usage: 125 MB
+2025/03/30 20:56:14   Duration: 22.85249s
+2025/03/30 20:56:14   Average write speed: 22801.27 MB/s
+2025/03/30 20:56:14 Iteration 9: Starting allocation phase
+2025/03/30 20:56:29 Iteration 9 completed:
+2025/03/30 20:56:29   Total written: 3 TB
+2025/03/30 20:56:29   usage: 100.00000%
+2025/03/30 20:56:29   Current memory usage: 94 MB
+2025/03/30 20:56:29   Duration: 15.762284292s
+2025/03/30 20:56:29   Average write speed: 23102.77 MB/s
+2025/03/30 20:56:29 Iteration 10: Starting allocation phase
+2025/03/30 20:56:51 Iteration 10 completed:
+2025/03/30 20:56:51   Total written: 4 TB
+2025/03/30 20:56:51   usage: 99.99971%
+2025/03/30 20:56:51   Current memory usage: 135 MB
+2025/03/30 20:56:51   Duration: 21.53713125s
+2025/03/30 20:56:51   Average write speed: 22182.16 MB/s
+2025/03/30 20:56:51 Iteration 11: Starting allocation phase
+2025/03/30 20:57:14 Iteration 11 completed:
+2025/03/30 20:57:14   Total written: 4 TB
+2025/03/30 20:57:14   usage: 100.00000%
+2025/03/30 20:57:14   Current memory usage: 105 MB
+2025/03/30 20:57:14   Duration: 23.353415083s
+2025/03/30 20:57:14   Average write speed: 21598.96 MB/s
+2025/03/30 20:57:14 Iteration 12: Starting allocation phase
+2025/03/30 20:57:28 Iteration 12 completed:
+2025/03/30 20:57:28   Total written: 4 TB
+2025/03/30 20:57:28   usage: 99.99990%
+2025/03/30 20:57:28   Current memory usage: 142 MB
+2025/03/30 20:57:28   Duration: 14.144315625s
+2025/03/30 20:57:28   Average write speed: 22112.39 MB/s
+2025/03/30 20:57:28 Iteration 13: Starting allocation phase
+2025/03/30 20:57:49 Iteration 13 completed:
+2025/03/30 20:57:49   Total written: 5 TB
+2025/03/30 20:57:49   usage: 100.00000%
+2025/03/30 20:57:49   Current memory usage: 105 MB
+2025/03/30 20:57:49   Duration: 21.109093584s
+2025/03/30 20:57:49   Average write speed: 21375.46 MB/s
+2025/03/30 20:57:49 Iteration 14: Starting allocation phase
+2025/03/30 20:58:09 Iteration 14 completed:
+2025/03/30 20:58:09   Total written: 5 TB
+2025/03/30 20:58:09   usage: 99.99971%
+2025/03/30 20:58:09   Current memory usage: 145 MB
+2025/03/30 20:58:09   Duration: 19.454477958s
+2025/03/30 20:58:09   Average write speed: 21255.09 MB/s
+2025/03/30 20:58:09 Iteration 15: Starting allocation phase
+2025/03/30 20:58:32 Iteration 15 completed:
+2025/03/30 20:58:32   Total written: 5 TB
+2025/03/30 20:58:32   usage: 99.99990%
+2025/03/30 20:58:32   Current memory usage: 114 MB
+2025/03/30 20:58:32   Duration: 23.266380083s
+2025/03/30 20:58:32   Average write speed: 20776.89 MB/s
+2025/03/30 20:58:32 Iteration 16: Starting allocation phase
+2025/03/30 20:58:50 Iteration 16 completed:
+2025/03/30 20:58:50   Total written: 6 TB
+2025/03/30 20:58:50   usage: 99.99981%
+2025/03/30 20:58:50   Current memory usage: 87 MB
+2025/03/30 20:58:50   Duration: 18.160127125s
+2025/03/30 20:58:50   Average write speed: 20864.76 MB/s
+2025/03/30 20:58:50 Iteration 17: Starting allocation phase
+[ERROR] 2025/03/30 20:58:50 slab.go:47: Failed to allocate new slab: no space available
+[ERROR] 2025/03/30 20:58:50 allocator.go:51: Slab allocation failed: no space available
+2025/03/30 20:59:06 Iteration 17 completed:
+2025/03/30 20:59:06   Total written: 6 TB
+2025/03/30 20:59:06   usage: 100.00000%
+2025/03/30 20:59:06   Current memory usage: 122 MB
+2025/03/30 20:59:06   Duration: 15.470779875s
+2025/03/30 20:59:06   Average write speed: 20885.11 MB/s
+2025/03/30 20:59:06 Iteration 18: Starting allocation phase
+2025/03/30 20:59:31 Iteration 18 completed:
+2025/03/30 20:59:31   Total written: 6 TB
+2025/03/30 20:59:31   usage: 99.99990%
+2025/03/30 20:59:31   Current memory usage: 90 MB
+2025/03/30 20:59:31   Duration: 25.367460667s
+2025/03/30 20:59:31   Average write speed: 20207.39 MB/s
+2025/03/30 20:59:31 Iteration 19: Starting allocation phase
+2025/03/30 20:59:56 Iteration 19 completed:
+2025/03/30 20:59:56   Total written: 7 TB
+2025/03/30 20:59:56   usage: 99.99971%
+2025/03/30 20:59:56   Current memory usage: 137 MB
+2025/03/30 20:59:56   Duration: 25.036678667s
+2025/03/30 20:59:56   Average write speed: 19996.47 MB/s
+2025/03/30 20:59:56 Iteration 20: Starting allocation phase
+2025/03/30 21:00:13 Iteration 20 completed:
+2025/03/30 21:00:13   Total written: 7 TB
+2025/03/30 21:00:13   usage: 100.00000%
+2025/03/30 21:00:13   Current memory usage: 100 MB
+2025/03/30 21:00:13   Duration: 16.487699709s
+2025/03/30 21:00:13   Average write speed: 20227.80 MB/s
+2025/03/30 21:00:13 Iteration 21: Starting allocation phase
+2025/03/30 21:00:40 Iteration 21 completed:
+2025/03/30 21:00:40   Total written: 7 TB
+2025/03/30 21:00:40   usage: 99.99990%
+2025/03/30 21:00:40   Current memory usage: 142 MB
+2025/03/30 21:00:40   Duration: 27.472069792s
+2025/03/30 21:00:40   Average write speed: 19623.16 MB/s
+2025/03/30 21:00:40 Iteration 22: Starting allocation phase
+2025/03/30 21:01:04 Iteration 22 completed:
+2025/03/30 21:01:04   Total written: 8 TB
+2025/03/30 21:01:04   usage: 100.00000%
+2025/03/30 21:01:04   Current memory usage: 116 MB
+2025/03/30 21:01:04   Duration: 23.332182334s
+2025/03/30 21:01:04   Average write speed: 19564.81 MB/s
+2025/03/30 21:01:04 Iteration 23: Starting allocation phase
+2025/03/30 21:01:30 Iteration 23 completed:
+2025/03/30 21:01:30   Total written: 8 TB
+2025/03/30 21:01:30   usage: 99.99981%
+2025/03/30 21:01:30   Current memory usage: 98 MB
+2025/03/30 21:01:30   Duration: 26.260175959s
+2025/03/30 21:01:30   Average write speed: 19299.88 MB/s
+2025/03/30 21:01:30 Iteration 24: Starting allocation phase
+2025/03/30 21:01:54 Iteration 24 completed:
+2025/03/30 21:01:54   Total written: 9 TB
+2025/03/30 21:01:54   usage: 99.99981%
+2025/03/30 21:01:54   Current memory usage: 142 MB
+2025/03/30 21:01:54   Duration: 23.753130333s
+2025/03/30 21:01:54   Average write speed: 19241.03 MB/s
+2025/03/30 21:01:54 Iteration 25: Starting allocation phase
+2025/03/30 21:02:21 Iteration 25 completed:
+2025/03/30 21:02:21   Total written: 9 TB
+2025/03/30 21:02:21   usage: 100.00000%
+2025/03/30 21:02:21   Current memory usage: 113 MB
+2025/03/30 21:02:21   Duration: 27.6682145s
+2025/03/30 21:02:21   Average write speed: 18957.90 MB/s
+2025/03/30 21:02:21 Iteration 26: Starting allocation phase
+2025/03/30 21:02:44 Iteration 26 completed:
+2025/03/30 21:02:44   Total written: 9 TB
+2025/03/30 21:02:44   usage: 99.99990%
+2025/03/30 21:02:44   Current memory usage: 92 MB
+2025/03/30 21:02:44   Duration: 22.586839208s
+2025/03/30 21:02:44   Average write speed: 18994.06 MB/s
+2025/03/30 21:02:44 Iteration 27: Starting allocation phase
+2025/03/30 21:03:11 Iteration 27 completed:
+2025/03/30 21:03:11   Total written: 10 TB
+2025/03/30 21:03:11   usage: 99.99990%
+2025/03/30 21:03:11   Current memory usage: 136 MB
+2025/03/30 21:03:11   Duration: 27.4124815s
+2025/03/30 21:03:11   Average write speed: 18743.67 MB/s
+2025/03/30 21:03:11   Total Duration: 9m36.624022875s
