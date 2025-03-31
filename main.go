@@ -220,6 +220,11 @@ func runTest(iteration int) TestResult {
 					start, err := Allocate(size)
 					if err == nil {
 						mutex.Lock()
+
+						if _, ok := allocated[start]; ok {
+							panic(fmt.Sprintf("invalid address start: %v, size: %d", start, size))
+						}
+
 						allocated[start] = size
 						totalWritten += size
 						totalAllocated += size
@@ -228,10 +233,9 @@ func runTest(iteration int) TestResult {
 							used := GetUsedSize()
 							use := float64(used) / float64(diskSize) * 100
 							elapsed := time.Since(startPrint)
-							hybrid.Info(
-								"%d MB allocated, cumulative writes: %d, cumulative frees: %d\n"+
-									"Duration: %v, Space usage: %.5f%%\n"+
-									"-----------------------------------------",
+							fmt.Printf(
+								"%d MB allocated, cumulative writes: %d, cumulative frees: %d"+
+									"Duration: %v, Space usage: %.5f%%\n",
 								totalAllocated/MB,
 								writeCount,
 								deleteCount,
@@ -281,7 +285,7 @@ func runTest(iteration int) TestResult {
 
 	// Calculate usage statistics
 	used := GetUsedSize()
-	hybrid.Info("used: %v", used)
+	fmt.Printf("used: %v, totalAllocated: %d\n", used, totalAllocated)
 	memoryUsage := GetMemoryUsage()
 
 	return TestResult{

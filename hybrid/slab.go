@@ -1,5 +1,56 @@
 package hybrid
 
+// NewSlab creates a new slab
+func NewSlab(start, size uint64, allocator *SlabAllocator, fromBuddy bool) *Slab {
+	return &Slab{
+		start:     start,
+		size:      size,
+		used:      0,
+		allocator: allocator,
+		allocated: make(map[uint64]uint64),
+		freeList:  []uint64{start},
+		fromBuddy: fromBuddy,
+	}
+}
+
+// isRangeOverlap checks if the given range overlaps with any allocated range
+func (s *Slab) isRangeOverlap(start, size uint64) bool {
+	for allocatedStart, allocatedSize := range s.allocated {
+		if (start >= allocatedStart && start < allocatedStart+allocatedSize) ||
+			(start+size > allocatedStart && start < allocatedStart+allocatedSize) ||
+			(start <= allocatedStart && start+size > allocatedStart) {
+			return true
+		}
+	}
+	return false
+}
+
+// findFreeSpace finds the first available space of the requested size
+func (s *Slab) findFreeSpace(size uint64) (uint64, bool) {
+	if s.used+size > s.size {
+		return 0, false
+	}
+
+	for i, freeStart := range s.freeList {
+		if freeStart+size <= s.start+s.size {
+			if !s.isRangeOverlap(freeStart, size) {
+				s.freeList = append(s.freeList[:i], s.freeList[i+1:]...)
+				return freeStart, true
+			}
+		}
+	}
+	current := s.start
+	for current+size <= s.start+s.size {
+		if !s.isRangeOverlap(current, size) {
+			s.freeList = append(s.freeList, current)
+			return current, true
+		}
+		current += size
+	}
+
+	return 0, false
+}
+
 // Allocate allocates memory of specified size from slab cache
 func (s *SlabAllocator) Allocate(size uint64) (uint64, error) {
 	s.mutex.Lock()
@@ -17,12 +68,7 @@ func (s *SlabAllocator) Allocate(size uint64) (uint64, error) {
 			return 0, err
 		}
 
-		slab := &Slab{
-			start:     start,
-			size:      SlabMaxSize,
-			used:      0,
-			allocator: s,
-		}
+		slab := NewSlab(start, SlabMaxSize, s, true)
 		s.slabs = append(s.slabs, slab)
 		s.cache[size] = []*Slab{slab}
 		s.counts[size] = 1
@@ -48,20 +94,22 @@ func (s *SlabAllocator) Allocate(size uint64) (uint64, error) {
 			return 0, err
 		}
 
-		targetSlab = &Slab{
-			start:     start,
-			size:      SlabMaxSize,
-			used:      0,
-			allocator: s,
-		}
+		targetSlab = NewSlab(start, SlabMaxSize, s, true)
 		s.slabs = append(s.slabs, targetSlab)
 		s.cache[size] = append(s.cache[size], targetSlab)
 		s.counts[size]++
 		Debug("Created new slab at address %d", start)
 	}
 
+	// Find available space
+	start, found := targetSlab.findFreeSpace(size)
+	if !found {
+		Error("No suitable space found in slab")
+		return 0, ErrNoSpaceAvailable
+	}
+
 	// Allocate space
-	start := targetSlab.start + targetSlab.used
+	targetSlab.allocated[start] = size
 	targetSlab.used += size
 	Debug("Allocated %d bytes from slab at address %d", size, start)
 	return start, nil
@@ -108,13 +156,27 @@ func (s *SlabAllocator) Free(start uint64) error {
 		return ErrInvalidAddress
 	}
 
-	// Update used size
+	// Check if address is actually allocated
+	allocatedSize, exists := targetSlab.allocated[start]
+	if !exists {
+		Error("Address %d is not allocated", start)
+		return ErrAddressNotAllocated
+	}
+
+	if allocatedSize != targetSize {
+		Error("Invalid size for address %d: expected %d, got %d", start, targetSize, allocatedSize)
+		return ErrInvalidAddress
+	}
+
+	// Update used size and clear allocation record
 	targetSlab.used -= targetSize
+	delete(targetSlab.allocated, start)
+	targetSlab.freeList = append(targetSlab.freeList, start)
 	Debug("Updated slab used size to %d", targetSlab.used)
 
-	// If slab is empty, release it
-	if targetSlab.used == 0 {
-		Debug("Slab is empty, releasing it")
+	// If slab is empty and it was allocated from buddy, release it
+	if targetSlab.used == 0 && targetSlab.fromBuddy {
+		Debug("Slab is empty and was allocated from buddy, releasing it")
 		// Remove from slabs list
 		for i, slab := range s.slabs {
 			if slab == targetSlab {

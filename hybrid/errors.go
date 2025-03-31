@@ -15,4 +15,8 @@ var (
 	ErrSlabNotFound = errors.New("slab not found")
 	// ErrSlabFull is returned when slab has no more space
 	ErrSlabFull = errors.New("slab is full")
+	// ErrAddressAlreadyAllocated is returned when trying to allocate an address that is already allocated
+	ErrAddressAlreadyAllocated = errors.New("address already allocated")
+	// ErrAddressNotAllocated is returned when trying to free an address that is not allocated
+	ErrAddressNotAllocated = errors.New("address not allocated")
 )

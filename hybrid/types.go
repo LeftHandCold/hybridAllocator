@@ -12,6 +12,17 @@ const (
 	MaxOrder       = 20                        // Maximum order value, supports up to 1TB
 )
 
+// Slab represents a memory slab
+type Slab struct {
+	start     uint64
+	size      uint64
+	used      uint64
+	allocator *SlabAllocator
+	allocated map[uint64]uint64 //start -> size
+	freeList  []uint64
+	fromBuddy bool
+}
+
 // Block represents a memory block
 type Block struct {
 	start  uint64
@@ -27,15 +38,6 @@ type BuddyAllocator struct {
 	blocks    [MaxOrder + 1][]*Block // MaxOrder + 1 = 21
 	mutex     sync.RWMutex
 	allocated map[uint64]*Block // track allocated blocks
-}
-
-// Slab represents a slab cache
-type Slab struct {
-	start     uint64
-	size      uint64
-	used      uint64
-	freeList  *Block
-	allocator *SlabAllocator
 }
 
 // SlabAllocator manages small memory blocks using slab allocation

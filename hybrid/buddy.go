@@ -62,7 +62,6 @@ func (b *BuddyAllocator) Allocate(size uint64) (uint64, error) {
 			return block.start, nil
 		}
 	}
-
 	return 0, ErrNoSpaceAvailable
 }
 

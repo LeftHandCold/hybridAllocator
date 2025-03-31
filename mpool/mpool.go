@@ -56,7 +56,6 @@ func NewMemoryPool(allocator *hybrid.Allocator) (*MemoryPool, error) {
 		largeUsed:    make([]bool, LargePoolSize),
 		allocator:    allocator,
 	}
-
 	// Pre-allocate small memory blocks (4KB-64KB)
 	for i := 0; i < SmallPoolSize; i++ {
 		size := uint64(rand.Intn(60*KB) + 4*KB) // 4KB-64KB
@@ -140,7 +139,6 @@ func (p *MemoryPool) Allocate(size uint64) (uint64, error) {
 func (p *MemoryPool) Free(addr uint64, size uint64) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-
 	p.stats.TotalFrees++
 
 	// Find corresponding pool based on size
@@ -180,7 +178,6 @@ func (p *MemoryPool) Free(addr uint64, size uint64) error {
 func (p *MemoryPool) Close() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-
 	// Free small memory blocks
 	for i := range p.smallBlocks {
 		if err := p.allocator.Free(p.smallBlocks[i], p.smallSizes[i]); err != nil {

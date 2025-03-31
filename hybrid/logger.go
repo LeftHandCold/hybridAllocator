@@ -24,7 +24,7 @@ const (
 	LogLevelDebug
 )
 
-var currentLogLevel = LogLevelInfo
+var currentLogLevel = LogLevelError
 
 var (
 	debugLogger *log.Logger
