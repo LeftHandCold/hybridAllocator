@@ -2,7 +2,13 @@ package hybrid
 
 import (
 	"fmt"
+	"strings"
 	"testing"
+)
+
+const (
+	MB = 1024 * 1024
+	KB = 1024
 )
 
 func TestAllocator(t *testing.T) {
@@ -93,4 +99,33 @@ func TestAllocator(t *testing.T) {
 			}
 		}
 	})
+}
+
+func BenchmarkAlloc(b *testing.B) {
+	sizes := []uint64{
+		4 * KB,
+		16 * KB,
+		64 * KB,
+		256 * KB,
+		1 * MB,
+		4 * MB,
+	}
+
+	for _, size := range sizes {
+		b.Run(fmt.Sprintf("Size_%dKB", size/KB), func(b *testing.B) {
+			allocator := NewAllocator()
+
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				_, err := allocator.Allocate(size)
+				if err != nil {
+					if strings.Contains(err.Error(), "no space available") {
+						break
+					}
+					b.Fatalf("Failed to allocate %d bytes: %v", size, err)
+				}
+			}
+			b.StopTimer()
+		})
+	}
 }

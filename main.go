@@ -234,7 +234,7 @@ func runTest(iteration int) TestResult {
 							use := float64(used) / float64(diskSize) * 100
 							elapsed := time.Since(startPrint)
 							fmt.Printf(
-								"%d MB allocated, cumulative writes: %d, cumulative frees: %d"+
+								"%d MB allocated, cumulative writes: %d, cumulative frees: %d, "+
 									"Duration: %v, Space usage: %.5f%%\n",
 								totalAllocated/MB,
 								writeCount,
