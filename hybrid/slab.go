@@ -223,3 +223,15 @@ func (s *SlabAllocator) GetUsedSize() uint64 {
 	Debug("Slab hybrid used size: %d bytes", used)
 	return used
 }
+
+func (s *SlabAllocator) GetFreeSize() uint64 {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	var free uint64
+	for _, slab := range s.slabs {
+		free += slab.size - slab.used
+	}
+	Debug("Slab hybrid free size: %d bytes", free)
+	return free
+}
