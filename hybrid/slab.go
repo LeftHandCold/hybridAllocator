@@ -13,6 +13,16 @@ func NewSlab(start, size uint64, allocator *SlabAllocator, fromBuddy bool) *Slab
 	}
 }
 
+// NewSlabAllocator creates a new slab allocator
+func NewSlabAllocator(buddy *BuddyAllocator) *SlabAllocator {
+	return &SlabAllocator{
+		buddy:  buddy,
+		slabs:  make([]*Slab, 0),
+		cache:  make(map[uint64][]*Slab),
+		counts: make(map[uint64]int),
+	}
+}
+
 // isRangeOverlap checks if the given range overlaps with any allocated range
 func (s *Slab) isRangeOverlap(start, size uint64) bool {
 	for allocatedStart, allocatedSize := range s.allocated {
@@ -90,7 +100,6 @@ func (s *SlabAllocator) Allocate(size uint64) (uint64, error) {
 		// All existing slabs are full, create a new one
 		start, err := s.buddy.Allocate(SlabMaxSize)
 		if err != nil {
-			Error("Failed to allocate new slab: %v", err)
 			return 0, err
 		}
 
@@ -108,6 +117,11 @@ func (s *SlabAllocator) Allocate(size uint64) (uint64, error) {
 		return 0, ErrNoSpaceAvailable
 	}
 
+	if _, exists := targetSlab.allocated[start]; exists {
+		Error("Address %d is already allocated", start)
+		return 0, ErrAddressAlreadyAllocated
+	}
+
 	// Allocate space
 	targetSlab.allocated[start] = size
 	targetSlab.used += size
@@ -116,7 +130,7 @@ func (s *SlabAllocator) Allocate(size uint64) (uint64, error) {
 }
 
 // Free releases allocated memory at specified address from slab cache
-func (s *SlabAllocator) Free(start uint64) error {
+func (s *SlabAllocator) Free(start, size uint64) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -124,15 +138,11 @@ func (s *SlabAllocator) Free(start uint64) error {
 	// Find target slab
 	var targetSlab *Slab
 	var targetSize uint64
-	for size, slabs := range s.cache {
-		for _, slab := range slabs {
-			if start >= slab.start && start < slab.start+slab.size {
-				targetSlab = slab
-				targetSize = size
-				break
-			}
-		}
-		if targetSlab != nil {
+	slabs := s.cache[size]
+	for _, slab := range slabs {
+		if start >= slab.start && start < slab.start+slab.size {
+			targetSlab = slab
+			targetSize = size
 			break
 		}
 	}
@@ -174,41 +184,50 @@ func (s *SlabAllocator) Free(start uint64) error {
 	targetSlab.freeList = append(targetSlab.freeList, start)
 	Debug("Updated slab used size to %d", targetSlab.used)
 
-	// If slab is empty and it was allocated from buddy, release it
+	// If slab is empty and it was allocated from buddy, add to merge queue
 	if targetSlab.used == 0 && targetSlab.fromBuddy {
-		Debug("Slab is empty and was allocated from buddy, releasing it")
-		// Remove from slabs list
-		for i, slab := range s.slabs {
-			if slab == targetSlab {
-				s.slabs = append(s.slabs[:i], s.slabs[i+1:]...)
-				break
-			}
-		}
-
-		// Remove from cache
-		slabs := s.cache[targetSize]
-		for i, slab := range slabs {
-			if slab == targetSlab {
+		slabs = s.cache[targetSize]
+		for i, sb := range slabs {
+			if sb == targetSlab {
 				if len(slabs) == 1 {
 					delete(s.cache, targetSize)
 					delete(s.counts, targetSize)
+					Debug("Removed slab from cache %d, size %d", targetSlab.start, targetSlab.size)
 				} else {
 					s.cache[targetSize] = append(slabs[:i], slabs[i+1:]...)
 					s.counts[targetSize]--
+					Debug("Removed slab from cache %d, size %d, s.counts[size] %d", targetSlab.start, targetSlab.size, s.counts[targetSize])
 				}
 				break
 			}
 		}
-
-		err := s.buddy.Free(targetSlab.start)
-		if err != nil {
-			Error("Failed to free empty slab: %v", err)
+		Debug("Merge queue is full, performing synchronous merge")
+		if err := s.mergeSlab(targetSlab); err != nil {
+			Error("Failed to merge slab: %v", err)
 			return err
 		}
-		Debug("Successfully released empty slab")
 	}
 
 	return nil
+}
+
+// mergeSlab performs the actual slab merge operation
+func (s *SlabAllocator) mergeSlab(slab *Slab) error {
+	slab.freeList = nil
+	Debug("Merging slab at address %d, size %d", slab.start, slab.size)
+
+	// Remove from slabs list
+	for i, sb := range s.slabs {
+		if sb == slab {
+			s.slabs = append(s.slabs[:i], s.slabs[i+1:]...)
+			break
+		}
+	}
+
+	// Remove from cache
+	Debug("Merged slab at address %d, size %d", slab.start, slab.size)
+	// Free to buddy system
+	return s.buddy.Free(slab.start)
 }
 
 // GetUsedSize returns the total size of allocated memory from slab cache

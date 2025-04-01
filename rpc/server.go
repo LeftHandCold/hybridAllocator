@@ -114,6 +114,6 @@ func (s *Server) Free(req *FreeRequest, resp *FreeResponse) error {
 func (s *Server) Close() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
+	s.allocator.Close()
 	return s.pool.Close()
 }

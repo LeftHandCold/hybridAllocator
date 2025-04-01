@@ -10,6 +10,8 @@ const (
 	BuddyStartSize = 1024 * 1024               // 1MB
 	SlabMaxSize    = 1024 * 1024               // 1MB
 	MaxOrder       = 20                        // Maximum order value, supports up to 1TB
+
+	buddyRegionCount = 8
 )
 
 // Slab represents a memory slab
@@ -18,7 +20,7 @@ type Slab struct {
 	size      uint64
 	used      uint64
 	allocator *SlabAllocator
-	allocated map[uint64]uint64 //start -> size
+	allocated map[uint64]uint64 // start -> size
 	freeList  []uint64
 	fromBuddy bool
 }
@@ -33,14 +35,21 @@ type Block struct {
 	slab   *Slab
 }
 
-// BuddyAllocator manages memory blocks using buddy system
-type BuddyAllocator struct {
-	blocks    [MaxOrder + 1][]*Block // MaxOrder + 1 = 21
-	mutex     sync.RWMutex
-	allocated map[uint64]*Block // track allocated blocks
+// MergeRequest represents a merge operation request
+type MergeRequest struct {
+	start uint64
+	size  uint64
+	from  string // "buddy" or "slab"
 }
 
-// SlabAllocator manages small memory blocks using slab allocation
+// Allocator is the main hybrid combining buddy and slab systems
+type Allocator struct {
+	buddy *BuddyAllocator
+	slab  *SlabAllocator
+	mutex sync.RWMutex
+}
+
+// SlabAllocator represents the slab allocator
 type SlabAllocator struct {
 	buddy  *BuddyAllocator
 	slabs  []*Slab
@@ -49,8 +58,29 @@ type SlabAllocator struct {
 	counts map[uint64]int
 }
 
-// Allocator is the main hybrid combining buddy and slab systems
-type Allocator struct {
-	buddy *BuddyAllocator
-	slab  *SlabAllocator
+// BuddyAllocator represents the buddy system allocator
+type BuddyAllocator struct {
+	regions  [buddyRegionCount]*BuddyRegion
+	stopChan chan struct{}
+}
+
+// BuddyRegion represents a region of the buddy system
+type BuddyRegion struct {
+	blocks    [MaxOrder + 1][]*Block // MaxOrder + 1 = 21
+	mutex     sync.RWMutex
+	allocated map[uint64]*Block // track allocated blocks
+	used      uint64
+	startAddr uint64
+	endAddr   uint64
+	mergeChan chan MergeRequest
+	stopChan  chan struct{}
+}
+
+// MergeWorker represents a worker for merging blocks in a specific region
+type MergeWorker struct {
+	startAddr uint64
+	endAddr   uint64
+	allocator *BuddyAllocator
+	mergeChan chan MergeRequest
+	stopChan  chan struct{}
 }

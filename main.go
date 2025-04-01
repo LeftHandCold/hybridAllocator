@@ -41,19 +41,21 @@ type TestResult struct {
 }
 
 type StressTest struct {
-	allocator *hybrid.Allocator
-	pool      *mpool.MemoryPool
-	allocated map[uint64]uint64 // start -> size
-	mu        sync.Mutex
+	allocator  *hybrid.Allocator
+	pool       *mpool.MemoryPool
+	blocks     []Block
+	blockCount int
+	mu         sync.Mutex
 }
 
 func NewStressTest() *StressTest {
 	allocator := hybrid.NewAllocator()
 	mp, _ := mpool.NewMemoryPool(allocator)
 	return &StressTest{
-		allocator: allocator,
-		pool:      mp,
-		allocated: make(map[uint64]uint64),
+		allocator:  allocator,
+		pool:       mp,
+		blocks:     make([]Block, 1000000),
+		blockCount: 0,
 	}
 }
 
@@ -65,61 +67,67 @@ func (st *StressTest) runStressTest(targetSize uint64) {
 	iteration := 0
 
 	for totalWritten < targetSize {
-		start := time.Now()
+		now := time.Now()
 		iteration++
 		log.Printf("Iteration %d: Starting allocation phase", iteration)
 		used := uint64(0)
-		for {
-			size := generateRandomSize()
-			start, err := st.allocator.Allocate(size)
-			if err != nil {
-				if strings.Contains(err.Error(), "no space available") {
-					err = nil
-					used = st.allocator.GetUsedSize()
-					break
+		allocationWg := sync.WaitGroup{}
+		for i := 0; i < 32; i++ {
+			allocationWg.Add(1)
+			go func() {
+				defer allocationWg.Done()
+				for {
+					size := generateRandomSize()
+					start, err := st.allocator.Allocate(size)
+					if err != nil {
+						if strings.Contains(err.Error(), "no space available") {
+							break
+						}
+						panic(fmt.Sprintf("Failed to Allocate. err: %v", err))
+					}
+
+					st.mu.Lock()
+					st.blocks[st.blockCount] = Block{start: start, size: size}
+					st.blockCount++
+					totalWritten += size
+					st.mu.Unlock()
 				}
-				panic(fmt.Sprintf("Failed to Allocate. err: %v", err))
-			}
-
-			st.mu.Lock()
-			st.allocated[start] = size
-			st.mu.Unlock()
-			totalWritten += size
+			}()
 		}
 
-		releaseRatio := 0.3 + rand.Float64()*0.2 // 30%-50%
-		st.mu.Lock()
-		toRelease := make([]uint64, 0, len(st.allocated))
-		for start := range st.allocated {
-			toRelease = append(toRelease, start)
-		}
-		st.mu.Unlock()
-
-		releaseCount := int(float64(len(toRelease)) * releaseRatio)
-		for i := 0; i < releaseCount; i++ {
-			idx := rand.Intn(len(toRelease))
-			start := toRelease[idx]
-
-			st.mu.Lock()
-			size := st.allocated[start]
-			delete(st.allocated, start)
-			st.mu.Unlock()
-
-			st.allocator.Free(start, size)
-			toRelease[idx] = toRelease[len(toRelease)-1]
-			toRelease = toRelease[:len(toRelease)-1]
-		}
-
-		var m runtime.MemStats
-		runtime.ReadMemStats(&m)
-		duration := time.Since(start)
+		allocationWg.Wait()
+		used = st.allocator.GetUsedSize()
 		usage := float64(used) / float64(st.allocator.GetTotalSize()) * 100
-		log.Printf("Iteration %d completed:", iteration)
-		log.Printf("  Total written: %d TB", totalWritten/(1024*1024*1024*1024))
-		log.Printf("  usage: %.5f%%\n", usage)
-		log.Printf("  Current memory usage: %d MB", m.Alloc/1024/1024)
-		log.Printf("  Duration: %v", duration)
-		log.Printf("  Average write speed: %.2f MB/s", float64(totalWritten)/time.Since(startTime).Seconds()/1024/1024)
+		log.Printf("start delete  usage: %.5f%%\n", usage)
+		printFun := func() {
+			var m runtime.MemStats
+			runtime.ReadMemStats(&m)
+			duration := time.Since(now)
+			log.Printf("Iteration %d completed:", iteration)
+			log.Printf("  Total written: %d TB", totalWritten/(1024*1024*1024*1024))
+			log.Printf("  usage: %.5f%%\n", usage)
+			log.Printf("  Current memory usage: %d MB", m.Alloc/1024/1024)
+			log.Printf("  Duration: %v", duration)
+			log.Printf("  Average write speed: %.2f MB/s", float64(totalWritten)/time.Since(startTime).Seconds()/1024/1024)
+		}
+		if totalWritten > targetSize {
+			printFun()
+			break
+		}
+		releaseRatio := 0.3 + rand.Float64()*0.2 // 30%-50%
+
+		releaseCount := int(float64(st.blockCount) * releaseRatio)
+		for j := 0; j < releaseCount; j++ {
+			if st.blockCount == 0 {
+				return
+			}
+			idx := rand.Intn(st.blockCount)
+			block := st.blocks[idx]
+			st.blocks[idx] = st.blocks[st.blockCount-1]
+			st.blockCount--
+			st.allocator.Free(block.start, block.size)
+		}
+		printFun()
 	}
 	log.Printf("  Total Duration: %v", time.Since(startTime))
 }
@@ -136,6 +144,12 @@ func generateRandomSize() uint64 {
 		p2roundup(numBlocks*512, 4096)
 	}
 	return size
+}
+
+// Block represents an allocated memory block
+type Block struct {
+	start uint64
+	size  uint64
 }
 
 func runTest(iteration int) TestResult {
@@ -156,6 +170,7 @@ func runTest(iteration int) TestResult {
 		GetUsedSize = allocator.GetUsedSize
 		GetMemoryUsage = allocator.GetMemoryUsage
 		defer memoryPool.Close()
+		defer allocator.Close()
 	} else {
 		server, err := rpc.NewServer()
 		if err != nil {
@@ -187,7 +202,9 @@ func runTest(iteration int) TestResult {
 		log.Fatalf("Failed to create memory pool: %v", err)
 	}
 
-	allocated := make(map[uint64]uint64) // start -> size
+	const maxBlocks = 1000000
+	blocks := make([]Block, maxBlocks)
+	blockCount := 0
 	diskSize := allocator.GetTotalSize()
 
 	var totalWritten, totalAllocated uint64
@@ -220,12 +237,19 @@ func runTest(iteration int) TestResult {
 					start, err := Allocate(size)
 					if err == nil {
 						mutex.Lock()
+						//found := false
+						//for i := 0; i < blockCount; i++ {
+						//	if blocks[i].start == start {
+						//		found = true
+						//		break
+						//	}
+						//}
+						//if found {
+						//	panic(fmt.Sprintf("invalid address start: %v, size: %d", start, size))
+						//}
 
-						if _, ok := allocated[start]; ok {
-							panic(fmt.Sprintf("invalid address start: %v, size: %d", start, size))
-						}
-
-						allocated[start] = size
+						blocks[blockCount] = Block{start: start, size: size}
+						blockCount++
 						totalWritten += size
 						totalAllocated += size
 						writeCount++
@@ -247,34 +271,33 @@ func runTest(iteration int) TestResult {
 						}
 						mutex.Unlock()
 					} else {
-						if strings.Contains(err.Error(), "no space available") {
-							err = nil
-							break
+						mutex.Lock()
+						used := GetUsedSize()
+						use := float64(used) / float64(diskSize) * 100
+						if use > 90 {
+							mutex.Unlock()
+							return
 						}
-						panic(fmt.Sprintf("Failed to Allocate. err: %v", err))
+						mutex.Unlock()
 					}
 				} else { // 30% chance to free
 					mutex.Lock()
-					if len(allocated) > 0 {
-						// Randomly select an allocated space to free
-						keys := make([]uint64, 0, len(allocated))
-						for k := range allocated {
-							keys = append(keys, k)
-						}
-						idx := rand.Intn(len(keys))
-						start := keys[idx]
-						size := allocated[start]
-						delete(allocated, start)
-						totalWritten -= size
-						deleteCount++
+					if blockCount == 0 {
 						mutex.Unlock()
-						err := Free(start, size)
-						if err != nil {
-							panic(fmt.Sprintf("Failed to Free. offset: %d, err: %v", start, err))
-						}
-					} else {
-						mutex.Unlock()
+						continue
 					}
+					idx := rand.Intn(blockCount)
+					block := blocks[idx]
+					blocks[idx] = blocks[blockCount-1]
+					blockCount--
+					mutex.Unlock()
+
+					err := Free(block.start, block.size)
+					if err != nil {
+						panic(fmt.Sprintf("Failed to free memory: %v", err))
+					}
+					deleteCount++
+					totalAllocated -= block.size
 				}
 			}
 		}()
@@ -283,17 +306,16 @@ func runTest(iteration int) TestResult {
 	wg.Wait()
 	duration := time.Since(startTime)
 
-	// Calculate usage statistics
 	used := GetUsedSize()
-	fmt.Printf("used: %v, totalAllocated: %d\n", used, totalAllocated)
+	use := float64(used) / float64(diskSize) * 100
 	memoryUsage := GetMemoryUsage()
 
 	return TestResult{
 		Iteration:     iteration,
 		TotalWrites:   uint64(writeCount),
 		TotalFrees:    uint64(deleteCount),
-		MaxUsage:      float64(used) / float64(diskSize) * 100,
-		FinalUsage:    float64(used) / float64(diskSize) * 100,
+		MaxUsage:      use,
+		FinalUsage:    use,
 		MemoryUsage:   memoryUsage,
 		TotalDuration: duration,
 	}

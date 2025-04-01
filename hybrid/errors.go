@@ -19,4 +19,6 @@ var (
 	ErrAddressAlreadyAllocated = errors.New("address already allocated")
 	// ErrAddressNotAllocated is returned when trying to free an address that is not allocated
 	ErrAddressNotAllocated = errors.New("address not allocated")
+
+	ErrBlockNotFound = errors.New("Block not found in allocated blocks")
 )

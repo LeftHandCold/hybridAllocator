@@ -2,14 +2,47 @@ package hybrid
 
 import (
 	"math"
+	"unsafe"
 )
 
 // NewBuddyAllocator creates a new buddy hybrid
 func NewBuddyAllocator() *BuddyAllocator {
-	return &BuddyAllocator{
-		blocks:    [MaxOrder + 1][]*Block{},
-		allocated: make(map[uint64]*Block),
+	b := &BuddyAllocator{
+		stopChan: make(chan struct{}),
 	}
+
+	// Create buddyRegionCount regions
+	regionSize := MaxBlockSize / buddyRegionCount
+	for i := 0; i < buddyRegionCount; i++ {
+		startAddr := uint64(i) * uint64(regionSize)
+		endAddr := startAddr + uint64(regionSize)
+		if i == buddyRegionCount-1 {
+			endAddr = MaxBlockSize // The last area is processed to the maximum address
+		}
+
+		region := &BuddyRegion{
+			blocks:    [MaxOrder + 1][]*Block{},
+			allocated: make(map[uint64]*Block),
+			startAddr: startAddr,
+			endAddr:   endAddr,
+			mergeChan: make(chan MergeRequest, 1000),
+			stopChan:  make(chan struct{}),
+		}
+
+		// Initialize the largest block in the region
+		maxBlock := &Block{
+			start:  startAddr,
+			size:   endAddr - startAddr,
+			isFree: true,
+		}
+		order := getOrder(maxBlock.size)
+		region.blocks[order] = append(region.blocks[order], maxBlock)
+
+		b.regions[i] = region
+		go region.run()
+	}
+
+	return b
 }
 
 // getOrder calculates the order value for a given size
@@ -23,27 +56,58 @@ func getOrder(size uint64) int {
 	return order
 }
 
+// run processes merge requests for a region
+func (r *BuddyRegion) run() {
+	for {
+		select {
+		case req := <-r.mergeChan:
+			if req.start >= r.startAddr && req.start < r.endAddr {
+				r.mutex.Lock()
+				err := r.mergeBlockLocked(req.start, req.size)
+				r.mutex.Unlock()
+				if err != nil {
+					Error("Failed to merge block: %v", err)
+				}
+			}
+		case <-r.stopChan:
+			return
+		}
+	}
+}
+
 // Allocate allocates memory of specified size
 func (b *BuddyAllocator) Allocate(size uint64) (uint64, error) {
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
+	// Iterate through all regions and find the first region with enough space
+	for _, region := range b.regions {
+		region.mutex.Lock()
+		addr, err := region.allocate(size)
+		region.mutex.Unlock()
+		if err == nil {
+			return addr, nil
+		}
+	}
+	return 0, ErrNoSpaceAvailable
+}
 
+// allocate allocates memory within a region
+func (r *BuddyRegion) allocate(size uint64) (uint64, error) {
 	order := getOrder(size)
 	if order > MaxOrder {
-		Error("Order %d exceeds MaxOrder %d", order, MaxOrder)
 		return 0, ErrSizeTooLarge
 	}
 
-	Debug("Looking for block of order %d", order)
 	// Find available block from current order up
 	for i := order; i <= MaxOrder; i++ {
-		if len(b.blocks[i]) > 0 {
-			block := b.blocks[i][0]
-			b.blocks[i] = b.blocks[i][1:]
+		if len(r.blocks[i]) > 0 {
+			block := r.blocks[i][0]
+			r.blocks[i] = r.blocks[i][1:]
+
+			if _, exists := r.allocated[block.start]; exists {
+				return 0, ErrAddressAlreadyAllocated
+			}
 
 			// Split block if too large
 			if i > order {
-				Debug("Splitting block of order %d into smaller blocks", i)
 				for j := i - 1; j >= order; j-- {
 					newBlock := &Block{
 						start:  block.start + (1<<uint(j))*BuddyStartSize,
@@ -51,40 +115,27 @@ func (b *BuddyAllocator) Allocate(size uint64) (uint64, error) {
 						isFree: true,
 					}
 					block.size = (1 << uint(j)) * BuddyStartSize
-					b.blocks[j] = append(b.blocks[j], newBlock)
-					Debug("Created new block of order %d at address %d", j, newBlock.start)
+					r.blocks[j] = append(r.blocks[j], newBlock)
 				}
 			}
 
 			block.isFree = false
-			b.allocated[block.start] = block
-			Debug("Allocated block of order %d at address %d, size %d", order, block.start, block.size)
+			r.allocated[block.start] = block
+			r.used += block.size
 			return block.start, nil
 		}
 	}
 	return 0, ErrNoSpaceAvailable
 }
 
-// Free releases allocated memory at specified address
-func (b *BuddyAllocator) Free(start uint64) error {
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
+// mergeBlock performs the actual merge operation
+func (b *BuddyRegion) mergeBlockLocked(start, size uint64) error {
+	order := getOrder(size)
+	currentStart := start
 
-	Debug("Attempting to free block at address %d", start)
-
-	block, exists := b.allocated[start]
-	if !exists {
-		Error("Invalid address %d: block not found in allocated list", start)
-		return ErrInvalidAddress
-	}
-
-	order := getOrder(block.size)
-	Debug("Found block of order %d at address %d", order, start)
-
-	// Try to merge with buddy blocks
+	// Starting from the current order, try to merge
 	for {
-		buddyStart := start ^ (1 << uint(order) * BuddyStartSize)
-		Debug("Looking for buddy block at address %d", buddyStart)
+		buddyStart := currentStart ^ (1 << uint(order) * BuddyStartSize)
 		var buddyIndex int = -1
 		for i, buddyBlock := range b.blocks[order] {
 			if buddyBlock.start == buddyStart && buddyBlock.isFree {
@@ -94,10 +145,9 @@ func (b *BuddyAllocator) Free(start uint64) error {
 		}
 
 		if buddyIndex == -1 {
-			Debug("No buddy block found, adding block as free")
-			// Add current block as free
+			// No buddy block was found to merge with, so the current block is added to the free list.
 			newBlock := &Block{
-				start:  start,
+				start:  currentStart,
 				size:   (1 << uint(order)) * BuddyStartSize,
 				isFree: true,
 			}
@@ -105,13 +155,12 @@ func (b *BuddyAllocator) Free(start uint64) error {
 			break
 		}
 
-		Debug("Found buddy block, merging blocks")
 		// Remove buddy block
 		b.blocks[order] = append(b.blocks[order][:buddyIndex], b.blocks[order][buddyIndex+1:]...)
 
-		// Merge blocks
-		if start > buddyStart {
-			start = buddyStart
+		// Merge
+		if currentStart > buddyStart {
+			currentStart = buddyStart
 		}
 		order++
 		if order > MaxOrder {
@@ -119,20 +168,80 @@ func (b *BuddyAllocator) Free(start uint64) error {
 		}
 	}
 
-	delete(b.allocated, block.start)
-	Debug("Successfully freed block at address %d", start)
+	return nil
+}
+
+// mergeBlock performs the actual merge operation
+func (b *BuddyRegion) mergeBlock(start, size uint64) error {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+	b.mergeBlockLocked(start, size)
+
+	return nil
+}
+
+// Free releases allocated memory at specified address
+func (b *BuddyAllocator) Free(start uint64) error {
+	// Find the corresponding region
+	regionSize := MaxBlockSize / buddyRegionCount
+	regionIndex := int(start) / regionSize
+	if regionIndex >= buddyRegionCount {
+		regionIndex = buddyRegionCount - 1
+	}
+	region := b.regions[regionIndex]
+
+	region.mutex.Lock()
+	defer region.mutex.Unlock()
+
+	// Find the block in allocated blocks
+	block, exists := region.allocated[start]
+	if !exists {
+		return ErrBlockNotFound
+	}
+
+	// Remove from allocated blocks
+	delete(region.allocated, start)
+	region.used -= block.size
+
+	// Send a merge request
+	select {
+	case region.mergeChan <- MergeRequest{start: start, size: block.size}:
+	default:
+		if err := region.mergeBlockLocked(start, block.size); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 // GetUsedSize returns the total size of allocated memory
 func (b *BuddyAllocator) GetUsedSize() uint64 {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
-
-	var used uint64
-	for _, block := range b.allocated {
-		used += block.size
+	var totalUsed uint64
+	for _, region := range b.regions {
+		region.mutex.RLock()
+		totalUsed += region.used
+		region.mutex.RUnlock()
 	}
-	Debug("Buddy hybrid used size: %d bytes", used)
-	return used
+	return totalUsed
+}
+
+// GetUsedSize returns the total size of allocated memory
+func (b *BuddyAllocator) GetMemoryUsage() uint64 {
+	var size uint64
+	// Calculate buddy hybrid memory usage
+	for _, region := range b.regions {
+		region.mutex.RLock()
+		size += uint64(unsafe.Sizeof([]*Block{})) * uint64(len(region.blocks))
+		region.mutex.RUnlock()
+	}
+	return size
+}
+
+// Close closes the buddy allocator and stops all regions
+func (b *BuddyAllocator) Close() error {
+	for _, region := range b.regions {
+		close(region.stopChan)
+	}
+	return nil
 }
