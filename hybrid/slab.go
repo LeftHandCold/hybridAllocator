@@ -254,3 +254,9 @@ func (s *SlabAllocator) GetFreeSize() uint64 {
 	Debug("Slab hybrid free size: %d bytes", free)
 	return free
 }
+
+func (s *SlabAllocator) Close() error {
+	s.cache = nil
+	s.slabs = nil
+	return nil
+}

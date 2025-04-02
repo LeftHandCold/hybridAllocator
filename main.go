@@ -139,11 +139,7 @@ func p2roundup(x uint64, align uint64) uint64 {
 func generateRandomSize() uint64 {
 	maxBlocks := MaxBlockSize / 512
 	numBlocks := uint64(rand.Intn(maxBlocks)) + 1
-	size := numBlocks * 512
-	if size < 4096 {
-		p2roundup(numBlocks*512, 4096)
-	}
-	return size
+	return p2roundup(numBlocks*512, 4096)
 }
 
 // Block represents an allocated memory block

@@ -103,5 +103,7 @@ func (a *Allocator) GetMemoryUsage() uint64 {
 }
 
 func (a *Allocator) Close() error {
+	a.buddy.Close()
+	a.slab.Close()
 	return nil
 }

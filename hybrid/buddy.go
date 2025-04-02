@@ -128,8 +128,8 @@ func (r *BuddyRegion) allocate(size uint64) (uint64, error) {
 	return 0, ErrNoSpaceAvailable
 }
 
-// mergeBlock performs the actual merge operation
-func (b *BuddyRegion) mergeBlockLocked(start, size uint64) error {
+// mergeBlockLocked performs the actual merge operation
+func (r *BuddyRegion) mergeBlockLocked(start, size uint64) error {
 	order := getOrder(size)
 	currentStart := start
 
@@ -137,7 +137,7 @@ func (b *BuddyRegion) mergeBlockLocked(start, size uint64) error {
 	for {
 		buddyStart := currentStart ^ (1 << uint(order) * BuddyStartSize)
 		var buddyIndex int = -1
-		for i, buddyBlock := range b.blocks[order] {
+		for i, buddyBlock := range r.blocks[order] {
 			if buddyBlock.start == buddyStart && buddyBlock.isFree {
 				buddyIndex = i
 				break
@@ -151,12 +151,12 @@ func (b *BuddyRegion) mergeBlockLocked(start, size uint64) error {
 				size:   (1 << uint(order)) * BuddyStartSize,
 				isFree: true,
 			}
-			b.blocks[order] = append(b.blocks[order], newBlock)
+			r.blocks[order] = append(r.blocks[order], newBlock)
 			break
 		}
 
 		// Remove buddy block
-		b.blocks[order] = append(b.blocks[order][:buddyIndex], b.blocks[order][buddyIndex+1:]...)
+		r.blocks[order] = append(r.blocks[order][:buddyIndex], r.blocks[order][buddyIndex+1:]...)
 
 		// Merge
 		if currentStart > buddyStart {
@@ -167,15 +167,6 @@ func (b *BuddyRegion) mergeBlockLocked(start, size uint64) error {
 			break
 		}
 	}
-
-	return nil
-}
-
-// mergeBlock performs the actual merge operation
-func (b *BuddyRegion) mergeBlock(start, size uint64) error {
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
-	b.mergeBlockLocked(start, size)
 
 	return nil
 }
@@ -241,6 +232,7 @@ func (b *BuddyAllocator) GetMemoryUsage() uint64 {
 // Close closes the buddy allocator and stops all regions
 func (b *BuddyAllocator) Close() error {
 	for _, region := range b.regions {
+		region.allocated = nil
 		close(region.stopChan)
 	}
 	return nil

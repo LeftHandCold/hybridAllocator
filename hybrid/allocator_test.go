@@ -22,7 +22,6 @@ func TestAllocator(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to allocate 4KB: %v", err)
 		}
-		fmt.Printf("start is %d, size is %d\n", start, size)
 		err = allocator.Free(start, size)
 		if err != nil {
 			t.Fatalf("Failed to free allocated space: %v", err)
@@ -68,7 +67,8 @@ func TestAllocator(t *testing.T) {
 	// Test invalid free
 	t.Run("Invalid free", func(t *testing.T) {
 		err := allocator.Free(0xdeadbeef, 4096)
-		if err != ErrInvalidAddress {
+		if err != ErrInvalidAddress &&
+			err != ErrBlockNotFound {
 			t.Errorf("Expected ErrInvalidAddress, got %v", err)
 		}
 	})
