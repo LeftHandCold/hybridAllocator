@@ -1,5 +1,7 @@
 package hybrid
 
+import "fmt"
+
 // NewSlab creates a new slab
 func NewSlab(start, size uint64, allocator *SlabAllocator, fromBuddy bool) *Slab {
 	return &Slab{
@@ -118,8 +120,7 @@ func (s *SlabAllocator) Allocate(size uint64) (uint64, error) {
 	}
 
 	if _, exists := targetSlab.allocated[start]; exists {
-		Error("Address %d is already allocated", start)
-		return 0, ErrAddressAlreadyAllocated
+		panic(fmt.Sprintf("Address %d is already allocated", start))
 	}
 
 	// Allocate space

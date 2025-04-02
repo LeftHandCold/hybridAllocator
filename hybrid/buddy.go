@@ -1,8 +1,8 @@
 package hybrid
 
 import (
+	"fmt"
 	"math"
-	"sort"
 	"unsafe"
 )
 
@@ -59,53 +59,17 @@ func getOrder(size uint64) int {
 
 // run processes merge requests for a region
 func (r *BuddyRegion) run() {
-	requests := make([]MergeRequest, 0, mergeBatchSize)
 	for {
 		select {
 		case req := <-r.mergeChan:
-			requests = append(requests, req)
-			for i := 0; i < mergeBatchSize-1; i++ {
-				select {
-				case req = <-r.mergeChan:
-					requests = append(requests, req)
-				default:
-					break
-				}
+			r.mutex.Lock()
+			err := r.mergeBlockLocked(req.start, req.size)
+			r.mutex.Unlock()
+			if err != nil {
+				panic(fmt.Sprintf("Failed to merge block: %v", err))
 			}
-			r.processBuddyRequests(requests)
-			requests = requests[:0]
 		case <-r.stopChan:
 			return
-		}
-	}
-}
-
-func (r *BuddyRegion) processBuddyRequests(requests []MergeRequest) {
-	sort.Slice(requests, func(i, j int) bool {
-		return requests[i].start < requests[j].start
-	})
-	// Merge adjacent requests
-	merged := make([]MergeRequest, 0)
-	current := requests[0]
-	for i := 1; i < len(requests); i++ {
-		if requests[i].start == current.start+current.size {
-			// Adjacent, merged
-			current.size += requests[i].size
-		} else {
-			// Not adjacent, save current and start new
-			merged = append(merged, current)
-			current = requests[i]
-		}
-	}
-	merged = append(merged, current)
-
-	// Processing merged requests
-	for _, req := range merged {
-		r.mutex.Lock()
-		err := r.mergeBlockLocked(req.start, req.size)
-		r.mutex.Unlock()
-		if err != nil {
-			Error("Failed to merge block: %v", err)
 		}
 	}
 }
@@ -138,7 +102,7 @@ func (r *BuddyRegion) allocate(size uint64) (uint64, error) {
 			r.blocks[i] = r.blocks[i][1:]
 
 			if _, exists := r.allocated[block.start]; exists {
-				return 0, ErrAddressAlreadyAllocated
+				panic(fmt.Sprintf("Address %d is already allocated", block.start))
 			}
 
 			// Split block if too large

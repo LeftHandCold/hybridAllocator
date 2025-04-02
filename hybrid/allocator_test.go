@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 )
 
 const (
@@ -99,6 +100,61 @@ func TestAllocator(t *testing.T) {
 			}
 		}
 	})
+}
+
+func TestBuddy(t *testing.T) {
+	buddy := NewBuddyAllocator()
+
+	// Test allocation
+	start1, err := buddy.Allocate(1024 * 1024)
+	if err != nil {
+		t.Fatalf("Failed to allocate 8192 bytes: %v", err)
+	}
+	t.Logf("Allocated 8192 bytes at address %d", start1)
+
+	start2, err := buddy.Allocate(1024 * 1024)
+	if err != nil {
+		t.Fatalf("Failed to allocate 8192 bytes: %v", err)
+	}
+	t.Logf("Allocated 8192 bytes at address %d", start2)
+
+	start3, err := buddy.Allocate(1024 * 1024)
+	if err != nil {
+		t.Fatalf("Failed to allocate 8192 bytes: %v", err)
+	}
+	t.Logf("Allocated 8192 bytes at address %d", start3)
+
+	// Test freeing
+	err = buddy.Free(start1)
+	if err != nil {
+		t.Fatalf("Failed to free allocated space: %v", err)
+	}
+	t.Logf("Freed allocated space at address %d", start1)
+
+	err = buddy.Free(start2)
+	if err != nil {
+		t.Fatalf("Failed to free allocated space: %v", err)
+	}
+	t.Logf("Freed allocated space at address %d", start2)
+
+	err = buddy.Free(start3)
+	if err != nil {
+		t.Fatalf("Failed to free allocated space: %v", err)
+	}
+	t.Logf("Freed allocated space at address %d", start3)
+
+	time.Sleep(time.Second * 2)
+
+	buddy.regions[0].mutex.Lock()
+	if len(buddy.regions[0].blocks[17]) != 1 {
+		for order, blocks := range buddy.regions[0].blocks {
+			for _, b := range blocks {
+				t.Logf("region 0 order %d block: %+v", order, b)
+			}
+		}
+		t.Fatalf("merge error")
+	}
+	buddy.regions[0].mutex.Unlock()
 }
 
 func BenchmarkAlloc(b *testing.B) {
