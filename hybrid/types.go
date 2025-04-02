@@ -12,6 +12,7 @@ const (
 	MaxOrder       = 20                        // Maximum order value, supports up to 1TB
 
 	buddyRegionCount = 8
+	mergeBatchSize   = 1000
 )
 
 // Slab represents a memory slab
@@ -52,7 +53,7 @@ type Allocator struct {
 // SlabAllocator represents the slab allocator
 type SlabAllocator struct {
 	buddy  *BuddyAllocator
-	slabs  []*Slab
+	slabs  map[uint64]*Slab
 	mutex  sync.RWMutex
 	cache  map[uint64][]*Slab
 	counts map[uint64]int

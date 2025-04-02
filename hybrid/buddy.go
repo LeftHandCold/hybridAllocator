@@ -2,6 +2,7 @@ package hybrid
 
 import (
 	"math"
+	"sort"
 	"unsafe"
 )
 
@@ -25,7 +26,7 @@ func NewBuddyAllocator() *BuddyAllocator {
 			allocated: make(map[uint64]*Block),
 			startAddr: startAddr,
 			endAddr:   endAddr,
-			mergeChan: make(chan MergeRequest, 1000),
+			mergeChan: make(chan MergeRequest, mergeBatchSize),
 			stopChan:  make(chan struct{}),
 		}
 
@@ -58,19 +59,53 @@ func getOrder(size uint64) int {
 
 // run processes merge requests for a region
 func (r *BuddyRegion) run() {
+	requests := make([]MergeRequest, 0, mergeBatchSize)
 	for {
 		select {
 		case req := <-r.mergeChan:
-			if req.start >= r.startAddr && req.start < r.endAddr {
-				r.mutex.Lock()
-				err := r.mergeBlockLocked(req.start, req.size)
-				r.mutex.Unlock()
-				if err != nil {
-					Error("Failed to merge block: %v", err)
+			requests = append(requests, req)
+			for i := 0; i < mergeBatchSize-1; i++ {
+				select {
+				case req = <-r.mergeChan:
+					requests = append(requests, req)
+				default:
+					break
 				}
 			}
+			r.processBuddyRequests(requests)
+			requests = requests[:0]
 		case <-r.stopChan:
 			return
+		}
+	}
+}
+
+func (r *BuddyRegion) processBuddyRequests(requests []MergeRequest) {
+	sort.Slice(requests, func(i, j int) bool {
+		return requests[i].start < requests[j].start
+	})
+	// Merge adjacent requests
+	merged := make([]MergeRequest, 0)
+	current := requests[0]
+	for i := 1; i < len(requests); i++ {
+		if requests[i].start == current.start+current.size {
+			// Adjacent, merged
+			current.size += requests[i].size
+		} else {
+			// Not adjacent, save current and start new
+			merged = append(merged, current)
+			current = requests[i]
+		}
+	}
+	merged = append(merged, current)
+
+	// Processing merged requests
+	for _, req := range merged {
+		r.mutex.Lock()
+		err := r.mergeBlockLocked(req.start, req.size)
+		r.mutex.Unlock()
+		if err != nil {
+			Error("Failed to merge block: %v", err)
 		}
 	}
 }

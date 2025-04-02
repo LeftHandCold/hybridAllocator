@@ -17,7 +17,7 @@ func NewSlab(start, size uint64, allocator *SlabAllocator, fromBuddy bool) *Slab
 func NewSlabAllocator(buddy *BuddyAllocator) *SlabAllocator {
 	return &SlabAllocator{
 		buddy:  buddy,
-		slabs:  make([]*Slab, 0),
+		slabs:  make(map[uint64]*Slab),
 		cache:  make(map[uint64][]*Slab),
 		counts: make(map[uint64]int),
 	}
@@ -79,7 +79,7 @@ func (s *SlabAllocator) Allocate(size uint64) (uint64, error) {
 		}
 
 		slab := NewSlab(start, SlabMaxSize, s, true)
-		s.slabs = append(s.slabs, slab)
+		s.slabs[slab.start] = slab
 		s.cache[size] = []*Slab{slab}
 		s.counts[size] = 1
 		slabs = s.cache[size]
@@ -104,7 +104,7 @@ func (s *SlabAllocator) Allocate(size uint64) (uint64, error) {
 		}
 
 		targetSlab = NewSlab(start, SlabMaxSize, s, true)
-		s.slabs = append(s.slabs, targetSlab)
+		s.slabs[targetSlab.start] = targetSlab
 		s.cache[size] = append(s.cache[size], targetSlab)
 		s.counts[size]++
 		Debug("Created new slab at address %d", start)
@@ -217,15 +217,8 @@ func (s *SlabAllocator) mergeSlab(slab *Slab) error {
 	Debug("Merging slab at address %d, size %d", slab.start, slab.size)
 
 	// Remove from slabs list
-	for i, sb := range s.slabs {
-		if sb == slab {
-			s.slabs = append(s.slabs[:i], s.slabs[i+1:]...)
-			break
-		}
-	}
+	delete(s.slabs, slab.start)
 
-	// Remove from cache
-	Debug("Merged slab at address %d, size %d", slab.start, slab.size)
 	// Free to buddy system
 	return s.buddy.Free(slab.start)
 }
