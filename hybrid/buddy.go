@@ -3,6 +3,7 @@ package hybrid
 import (
 	"fmt"
 	"math/bits"
+	"sync"
 	"unsafe"
 )
 
@@ -20,17 +21,40 @@ func NewBuddyAllocator() *BuddyAllocator {
 		b.blockMap[j] = make(map[uint64]*Block)
 	}
 
-	// Initialize the largest block
-	maxBlock := &Block{
-		start:  0,
-		size:   MaxBlockSize,
-		isFree: true,
+	// Initialize block pool
+	b.blockPool = &sync.Pool{
+		New: func() interface{} {
+			return &Block{}
+		},
 	}
+
+	// Initialize the largest block
+	maxBlock := b.getBlock()
+	maxBlock.start = 0
+	maxBlock.size = MaxBlockSize
+	maxBlock.isFree = true
+	maxBlock.next = nil
+	maxBlock.prev = nil
+	maxBlock.slab = nil
+
 	order := getOrder(maxBlock.size)
 	b.blocks[order] = maxBlock
 	b.blockMap[order][maxBlock.start] = maxBlock
 
 	return b
+}
+
+// getBlock gets a Block from the pool
+func (b *BuddyAllocator) getBlock() *Block {
+	return b.blockPool.Get().(*Block)
+}
+
+// putBlock puts a Block back to the pool
+func (b *BuddyAllocator) putBlock(block *Block) {
+	block.next = nil
+	block.prev = nil
+	block.slab = nil
+	b.blockPool.Put(block)
 }
 
 // getOrder calculates the order value for a given size
@@ -75,11 +99,14 @@ func (b *BuddyAllocator) Allocate(size uint64) (uint64, error) {
 			// Split block if too large
 			if i > order {
 				for j := i - 1; j >= order; j-- {
-					newBlock := &Block{
-						start:  block.start + (1<<uint(j))*BuddyStartSize,
-						size:   (1 << uint(j)) * BuddyStartSize,
-						isFree: true,
-					}
+					newBlock := b.getBlock()
+					newBlock.start = block.start + (1<<uint(j))*BuddyStartSize
+					newBlock.size = (1 << uint(j)) * BuddyStartSize
+					newBlock.isFree = true
+					newBlock.next = nil
+					newBlock.prev = nil
+					newBlock.slab = nil
+
 					block.size = (1 << uint(j)) * BuddyStartSize
 
 					// Add to linked list
@@ -114,11 +141,13 @@ func (b *BuddyAllocator) mergeBlockLocked(start, size uint64) error {
 		buddyBlock, exists := b.blockMap[order][buddyStart]
 		if !exists {
 			// No buddy block was found to merge with, so the current block is added to the free list
-			newBlock := &Block{
-				start:  currentStart,
-				size:   (1 << uint(order)) * BuddyStartSize,
-				isFree: true,
-			}
+			newBlock := b.getBlock()
+			newBlock.start = currentStart
+			newBlock.size = (1 << uint(order)) * BuddyStartSize
+			newBlock.isFree = true
+			newBlock.next = nil
+			newBlock.prev = nil
+			newBlock.slab = nil
 
 			// Add to linked list
 			if b.blocks[order] != nil {
@@ -140,6 +169,7 @@ func (b *BuddyAllocator) mergeBlockLocked(start, size uint64) error {
 			buddyBlock.next.prev = buddyBlock.prev
 		}
 		delete(b.blockMap[order], buddyStart)
+		b.putBlock(buddyBlock)
 
 		// Merge
 		if currentStart > buddyStart {

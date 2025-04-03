@@ -42,9 +42,9 @@ func init() {
 
 // Debug logs debug information
 func Debug(format string, v ...interface{}) {
-	if currentLogLevel >= LogLevelDebug {
-		debugLogger.Output(2, fmt.Sprintf(format, v...))
-	}
+	//if currentLogLevel >= LogLevelDebug {
+	//	debugLogger.Output(2, fmt.Sprintf(format, v...))
+	//}
 }
 
 // Error logs error information

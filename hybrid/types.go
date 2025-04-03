@@ -68,4 +68,5 @@ type BuddyAllocator struct {
 	used      uint64
 	startAddr uint64
 	endAddr   uint64
+	blockPool *sync.Pool // Pool for Block objects
 }
