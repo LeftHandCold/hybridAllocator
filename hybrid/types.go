@@ -74,15 +74,4 @@ type BuddyRegion struct {
 	used      uint64
 	startAddr uint64
 	endAddr   uint64
-	mergeChan chan MergeRequest
-	stopChan  chan struct{}
-}
-
-// MergeWorker represents a worker for merging blocks in a specific region
-type MergeWorker struct {
-	startAddr uint64
-	endAddr   uint64
-	allocator *BuddyAllocator
-	mergeChan chan MergeRequest
-	stopChan  chan struct{}
 }

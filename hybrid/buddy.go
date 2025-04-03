@@ -2,7 +2,7 @@ package hybrid
 
 import (
 	"fmt"
-	"math"
+	"math/bits"
 	"unsafe"
 )
 
@@ -26,8 +26,6 @@ func NewBuddyAllocator() *BuddyAllocator {
 			allocated: make(map[uint64]*Block),
 			startAddr: startAddr,
 			endAddr:   endAddr,
-			mergeChan: make(chan MergeRequest, mergeBatchSize),
-			stopChan:  make(chan struct{}),
 		}
 
 		// Initialize blockMap for each order
@@ -46,7 +44,6 @@ func NewBuddyAllocator() *BuddyAllocator {
 		region.blockMap[order][maxBlock.start] = maxBlock
 
 		b.regions[i] = region
-		go region.run()
 	}
 
 	return b
@@ -58,26 +55,8 @@ func getOrder(size uint64) int {
 		return 0
 	}
 	size = (size + BuddyStartSize - 1) & ^uint64(BuddyStartSize-1) // Round up to nearest MinBlockSize
-	order := int(math.Log2(float64(size) / float64(BuddyStartSize)))
-	Debug("Calculated order %d for size %d", order, size)
+	order := bits.TrailingZeros64(size / BuddyStartSize)
 	return order
-}
-
-// run processes merge requests for a region
-func (r *BuddyRegion) run() {
-	for {
-		select {
-		case req := <-r.mergeChan:
-			r.mutex.Lock()
-			err := r.mergeBlockLocked(req.start, req.size)
-			r.mutex.Unlock()
-			if err != nil {
-				panic(fmt.Sprintf("Failed to merge block: %v", err))
-			}
-		case <-r.stopChan:
-			return
-		}
-	}
 }
 
 // Allocate allocates memory of specified size
@@ -224,13 +203,8 @@ func (b *BuddyAllocator) Free(start uint64) error {
 	// Remove from allocated blocks
 	delete(region.allocated, start)
 	region.used -= block.size
-	// Send a merge request
-	select {
-	case region.mergeChan <- MergeRequest{start: start, size: block.size}:
-	default:
-		if err := region.mergeBlockLocked(start, block.size); err != nil {
-			return err
-		}
+	if err := region.mergeBlockLocked(start, block.size); err != nil {
+		return err
 	}
 
 	return nil
@@ -263,7 +237,6 @@ func (b *BuddyAllocator) GetMemoryUsage() uint64 {
 func (b *BuddyAllocator) Close() error {
 	for _, region := range b.regions {
 		region.allocated = nil
-		close(region.stopChan)
 	}
 	return nil
 }
