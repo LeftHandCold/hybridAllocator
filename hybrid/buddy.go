@@ -22,12 +22,17 @@ func NewBuddyAllocator() *BuddyAllocator {
 		}
 
 		region := &BuddyRegion{
-			blocks:    [MaxOrder + 1][]*Block{},
+			blockMap:  [MaxOrder + 1]map[uint64]*Block{},
 			allocated: make(map[uint64]*Block),
 			startAddr: startAddr,
 			endAddr:   endAddr,
 			mergeChan: make(chan MergeRequest, mergeBatchSize),
 			stopChan:  make(chan struct{}),
+		}
+
+		// Initialize blockMap for each order
+		for j := 0; j <= MaxOrder; j++ {
+			region.blockMap[j] = make(map[uint64]*Block)
 		}
 
 		// Initialize the largest block in the region
@@ -37,7 +42,8 @@ func NewBuddyAllocator() *BuddyAllocator {
 			isFree: true,
 		}
 		order := getOrder(maxBlock.size)
-		region.blocks[order] = append(region.blocks[order], maxBlock)
+		region.blocks[order] = maxBlock
+		region.blockMap[order][maxBlock.start] = maxBlock
 
 		b.regions[i] = region
 		go region.run()
@@ -97,9 +103,18 @@ func (r *BuddyRegion) allocate(size uint64) (uint64, error) {
 
 	// Find available block from current order up
 	for i := order; i <= MaxOrder; i++ {
-		if len(r.blocks[i]) > 0 {
-			block := r.blocks[i][0]
-			r.blocks[i] = r.blocks[i][1:]
+		if r.blocks[i] != nil {
+			block := r.blocks[i]
+			// Remove from linked list
+			if block.prev != nil {
+				block.prev.next = block.next
+			} else {
+				r.blocks[i] = block.next
+			}
+			if block.next != nil {
+				block.next.prev = block.prev
+			}
+			delete(r.blockMap[i], block.start)
 
 			if _, exists := r.allocated[block.start]; exists {
 				panic(fmt.Sprintf("Address %d is already allocated", block.start))
@@ -114,7 +129,14 @@ func (r *BuddyRegion) allocate(size uint64) (uint64, error) {
 						isFree: true,
 					}
 					block.size = (1 << uint(j)) * BuddyStartSize
-					r.blocks[j] = append(r.blocks[j], newBlock)
+
+					// Add to linked list
+					if r.blocks[j] != nil {
+						newBlock.next = r.blocks[j]
+						r.blocks[j].prev = newBlock
+					}
+					r.blocks[j] = newBlock
+					r.blockMap[j][newBlock.start] = newBlock
 				}
 			}
 
@@ -135,27 +157,37 @@ func (r *BuddyRegion) mergeBlockLocked(start, size uint64) error {
 	// Starting from the current order, try to merge
 	for {
 		buddyStart := currentStart ^ (1 << uint(order) * BuddyStartSize)
-		var buddyIndex int = -1
-		for i, buddyBlock := range r.blocks[order] {
-			if buddyBlock.start == buddyStart && buddyBlock.isFree {
-				buddyIndex = i
-				break
-			}
-		}
 
-		if buddyIndex == -1 {
-			// No buddy block was found to merge with, so the current block is added to the free list.
+		// Use blockMap to find buddy block
+		buddyBlock, exists := r.blockMap[order][buddyStart]
+		if !exists {
+			// No buddy block was found to merge with, so the current block is added to the free list
 			newBlock := &Block{
 				start:  currentStart,
 				size:   (1 << uint(order)) * BuddyStartSize,
 				isFree: true,
 			}
-			r.blocks[order] = append(r.blocks[order], newBlock)
+
+			// Add to linked list
+			if r.blocks[order] != nil {
+				newBlock.next = r.blocks[order]
+				r.blocks[order].prev = newBlock
+			}
+			r.blocks[order] = newBlock
+			r.blockMap[order][newBlock.start] = newBlock
 			break
 		}
 
-		// Remove buddy block
-		r.blocks[order] = append(r.blocks[order][:buddyIndex], r.blocks[order][buddyIndex+1:]...)
+		// Remove buddy block from linked list
+		if buddyBlock.prev != nil {
+			buddyBlock.prev.next = buddyBlock.next
+		} else {
+			r.blocks[order] = buddyBlock.next
+		}
+		if buddyBlock.next != nil {
+			buddyBlock.next.prev = buddyBlock.prev
+		}
+		delete(r.blockMap[order], buddyStart)
 
 		// Merge
 		if currentStart > buddyStart {
@@ -192,7 +224,6 @@ func (b *BuddyAllocator) Free(start uint64) error {
 	// Remove from allocated blocks
 	delete(region.allocated, start)
 	region.used -= block.size
-
 	// Send a merge request
 	select {
 	case region.mergeChan <- MergeRequest{start: start, size: block.size}:

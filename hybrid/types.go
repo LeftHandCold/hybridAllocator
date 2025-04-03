@@ -67,7 +67,8 @@ type BuddyAllocator struct {
 
 // BuddyRegion represents a region of the buddy system
 type BuddyRegion struct {
-	blocks    [MaxOrder + 1][]*Block // MaxOrder + 1 = 21
+	blocks    [MaxOrder + 1]*Block            // MaxOrder + 1 = 21, head of linked list for each order
+	blockMap  [MaxOrder + 1]map[uint64]*Block // Maps block start address to block pointer
 	mutex     sync.RWMutex
 	allocated map[uint64]*Block // track allocated blocks
 	used      uint64
