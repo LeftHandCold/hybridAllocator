@@ -10,9 +10,6 @@ const (
 	BuddyStartSize = 1024 * 1024               // 1MB
 	SlabMaxSize    = 1024 * 1024               // 1MB
 	MaxOrder       = 20                        // Maximum order value, supports up to 1TB
-
-	buddyRegionCount = 8
-	mergeBatchSize   = 1000
 )
 
 // Slab represents a memory slab
@@ -34,13 +31,6 @@ type Block struct {
 	next   *Block
 	prev   *Block
 	slab   *Slab
-}
-
-// MergeRequest represents a merge operation request
-type MergeRequest struct {
-	start uint64
-	size  uint64
-	from  string // "buddy" or "slab"
 }
 
 // Allocator is the main hybrid combining buddy and slab systems
