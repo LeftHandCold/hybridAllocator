@@ -2,7 +2,6 @@ package hybrid
 
 import (
 	"fmt"
-	"math/bits"
 	"sync"
 	"unsafe"
 )
@@ -63,8 +62,21 @@ func getOrder(size uint64) int {
 		return 0
 	}
 	size = (size + BuddyStartSize - 1) & ^uint64(BuddyStartSize-1) // Round up to nearest MinBlockSize
-	order := bits.TrailingZeros64(size / BuddyStartSize)
+	order := 0
+	for size > BuddyStartSize {
+		size >>= 1
+		order++
+	}
 	return order
+}
+
+func getBlockSizeWithSize(size uint64) uint64 {
+	order := getOrder(size)
+	return (1 << uint(order)) * BuddyStartSize
+}
+
+func getBlockSize(order int) uint64 {
+	return (1 << uint(order)) * BuddyStartSize
 }
 
 // Allocate allocates memory of specified size
@@ -91,23 +103,24 @@ func (b *BuddyAllocator) Allocate(size uint64) (uint64, error) {
 				block.next.prev = block.prev
 			}
 			delete(b.blockMap[i], block.start)
-
-			if _, exists := b.allocated[block.start]; exists {
-				panic(fmt.Sprintf("Address %d is already allocated", block.start))
+			if EnableTrackBlock() {
+				if _, exists := b.allocated[block.start]; exists {
+					panic(fmt.Sprintf("Address %d is already allocated", block.start))
+				}
 			}
 
 			// Split block if too large
 			if i > order {
 				for j := i - 1; j >= order; j-- {
 					newBlock := b.getBlock()
-					newBlock.start = block.start + (1<<uint(j))*BuddyStartSize
-					newBlock.size = (1 << uint(j)) * BuddyStartSize
+					newBlock.start = block.start + getBlockSize(j)
+					newBlock.size = getBlockSize(j)
 					newBlock.isFree = true
 					newBlock.next = nil
 					newBlock.prev = nil
 					newBlock.slab = nil
 
-					block.size = (1 << uint(j)) * BuddyStartSize
+					block.size = getBlockSize(j)
 
 					// Add to linked list
 					if b.blocks[j] != nil {
@@ -120,8 +133,14 @@ func (b *BuddyAllocator) Allocate(size uint64) (uint64, error) {
 			}
 
 			block.isFree = false
-			b.allocated[block.start] = block
+			if EnableTrackBlock() {
+				b.allocated[block.start] = block
+			}
 			b.used += block.size
+			if size > block.size {
+				panic(fmt.Sprintf("An invalid address was assigned %d - %d - %d",
+					block.start, block.size, size))
+			}
 			return block.start, nil
 		}
 	}
@@ -135,14 +154,14 @@ func (b *BuddyAllocator) mergeBlockLocked(start, size uint64) error {
 
 	// Try to merge blocks starting from current order
 	for order <= MaxOrder {
-		buddyStart := currentStart ^ (1 << uint(order) * BuddyStartSize)
+		buddyStart := currentStart ^ getBlockSize(order)
 		buddyBlock, exists := b.blockMap[order][buddyStart]
 
 		if !exists {
 			// No buddy found, add current block to free list
 			newBlock := b.getBlock()
 			newBlock.start = currentStart
-			newBlock.size = (1 << uint(order)) * BuddyStartSize
+			newBlock.size = getBlockSize(order)
 			newBlock.isFree = true
 			newBlock.next = nil
 			newBlock.prev = nil
@@ -181,23 +200,30 @@ func (b *BuddyAllocator) mergeBlockLocked(start, size uint64) error {
 }
 
 // Free releases allocated memory at specified address
-func (b *BuddyAllocator) Free(start uint64) error {
+func (b *BuddyAllocator) Free(start, size uint64) error {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
+	blockSize := size
+	if EnableTrackBlock() {
+		// Find the block in allocated blocks
+		block, exists := b.allocated[start]
+		if !exists {
+			return ErrBlockNotFound
+		}
 
-	// Find the block in allocated blocks
-	block, exists := b.allocated[start]
-	if !exists {
-		return ErrBlockNotFound
+		// Remove from allocated blocks
+		delete(b.allocated, start)
+		blockSize = block.size
+		if blockSize != getBlockSizeWithSize(size) {
+			panic(fmt.Sprintf("Free an invalid block %d, %v", size, block))
+		}
+	} else {
+		blockSize = getBlockSizeWithSize(size)
 	}
-
-	// Remove from allocated blocks
-	delete(b.allocated, start)
-	b.used -= block.size
-	if err := b.mergeBlockLocked(start, block.size); err != nil {
+	b.used -= blockSize
+	if err := b.mergeBlockLocked(start, blockSize); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -217,6 +243,5 @@ func (b *BuddyAllocator) GetMemoryUsage() uint64 {
 
 // Close closes the buddy allocator
 func (b *BuddyAllocator) Close() error {
-	b.allocated = nil
 	return nil
 }

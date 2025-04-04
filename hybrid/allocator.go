@@ -52,7 +52,7 @@ func (a *Allocator) Free(start uint64, size uint64) error {
 		err := a.slab.Free(start, size)
 		if err == ErrSlabNotFound {
 			Debug("Address not found in slab, trying buddy hybrid")
-			return a.buddy.Free(start)
+			return a.buddy.Free(start, size)
 		}
 		if err != nil {
 			Error("Slab free failed: %v", err)
@@ -62,7 +62,7 @@ func (a *Allocator) Free(start uint64, size uint64) error {
 		return nil
 	}
 
-	err := a.buddy.Free(start)
+	err := a.buddy.Free(start, size)
 	if err != nil {
 		Error("Buddy free failed: %v", err)
 		return err

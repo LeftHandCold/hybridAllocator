@@ -124,19 +124,19 @@ func TestBuddy(t *testing.T) {
 	t.Logf("Allocated 8192 bytes at address %d", start3)
 
 	// Test freeing
-	err = buddy.Free(start1)
+	err = buddy.Free(start1, 1024*1024)
 	if err != nil {
 		t.Fatalf("Failed to free allocated space: %v", err)
 	}
 	t.Logf("Freed allocated space at address %d", start1)
 
-	err = buddy.Free(start2)
+	err = buddy.Free(start2, 1024*1024)
 	if err != nil {
 		t.Fatalf("Failed to free allocated space: %v", err)
 	}
 	t.Logf("Freed allocated space at address %d", start2)
 
-	err = buddy.Free(start3)
+	err = buddy.Free(start3, 1024*1024)
 	if err != nil {
 		t.Fatalf("Failed to free allocated space: %v", err)
 	}

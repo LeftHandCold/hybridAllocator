@@ -10,6 +10,8 @@ const (
 	BuddyStartSize = 1024 * 1024               // 1MB
 	SlabMaxSize    = 1024 * 1024               // 1MB
 	MaxOrder       = 20                        // Maximum order value, supports up to 1TB
+
+	EnableTrackAllocatedBlocks = 0
 )
 
 // Slab represents a memory slab
@@ -59,4 +61,8 @@ type BuddyAllocator struct {
 	startAddr uint64
 	endAddr   uint64
 	blockPool *sync.Pool // Pool for Block objects
+}
+
+func EnableTrackBlock() bool {
+	return EnableTrackAllocatedBlocks == 1
 }

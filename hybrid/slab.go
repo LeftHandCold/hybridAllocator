@@ -155,7 +155,7 @@ func (s *SlabAllocator) Free(start, size uint64) error {
 	if targetSlab == nil {
 		Debug("Address not found in slab cache, trying buddy hybrid")
 		// Try buddy hybrid if not found in slab cache
-		err := s.buddy.Free(start)
+		err := s.buddy.Free(start, size)
 		if err != nil {
 			Error("Failed to free memory from buddy hybrid: %v", err)
 			return err
@@ -228,7 +228,7 @@ func (s *SlabAllocator) mergeSlab(slab *Slab) error {
 	delete(s.slabs, slab.start)
 
 	// Free to buddy system
-	return s.buddy.Free(slab.start)
+	return s.buddy.Free(slab.start, slab.size)
 }
 
 // GetUsedSize returns the total size of allocated memory from slab cache

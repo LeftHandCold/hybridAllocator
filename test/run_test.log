@@ -4,225 +4,191 @@ Min block size: 4 KB
 Max block size: 4 MB
 
 Running iteration 1...
-10230 MB allocated, cumulative writes: 8999, cumulative frees: 3833, Duration: 19ms, Space usage: 1.88880%
-20465 MB allocated, cumulative writes: 17988, cumulative frees: 7734, Duration: 32ms, Space usage: 2.68165%
-30710 MB allocated, cumulative writes: 27050, cumulative frees: 11682, Duration: 34ms, Space usage: 3.66160%
-40947 MB allocated, cumulative writes: 36116, cumulative frees: 15501, Duration: 35ms, Space usage: 4.65263%
-51192 MB allocated, cumulative writes: 45196, cumulative frees: 19402, Duration: 37ms, Space usage: 5.64199%
-61434 MB allocated, cumulative writes: 54119, cumulative frees: 23172, Duration: 40ms, Space usage: 6.63947%
-71669 MB allocated, cumulative writes: 63192, cumulative frees: 27138, Duration: 43ms, Space usage: 7.64162%
-81903 MB allocated, cumulative writes: 72062, cumulative frees: 30920, Duration: 43ms, Space usage: 8.66401%
-92153 MB allocated, cumulative writes: 81112, cumulative frees: 34766, Duration: 47ms, Space usage: 9.69787%
-102398 MB allocated, cumulative writes: 89823, cumulative frees: 38311, Duration: 45ms, Space usage: 10.73732%
-112640 MB allocated, cumulative writes: 98599, cumulative frees: 42052, Duration: 47ms, Space usage: 11.77620%
-122878 MB allocated, cumulative writes: 107580, cumulative frees: 45912, Duration: 49ms, Space usage: 12.82140%
-133120 MB allocated, cumulative writes: 116507, cumulative frees: 49775, Duration: 49ms, Space usage: 13.86542%
-143351 MB allocated, cumulative writes: 125321, cumulative frees: 53463, Duration: 49ms, Space usage: 14.91389%
-153592 MB allocated, cumulative writes: 134778, cumulative frees: 57610, Duration: 54ms, Space usage: 15.95760%
-163837 MB allocated, cumulative writes: 143882, cumulative frees: 61503, Duration: 51ms, Space usage: 17.00559%
-174081 MB allocated, cumulative writes: 152933, cumulative frees: 65438, Duration: 52ms, Space usage: 18.05163%
-184321 MB allocated, cumulative writes: 161784, cumulative frees: 69238, Duration: 51ms, Space usage: 19.08883%
-194556 MB allocated, cumulative writes: 170725, cumulative frees: 73088, Duration: 53ms, Space usage: 20.12469%
-204797 MB allocated, cumulative writes: 179234, cumulative frees: 76654, Duration: 54ms, Space usage: 21.16350%
-215032 MB allocated, cumulative writes: 188465, cumulative frees: 80679, Duration: 56ms, Space usage: 22.20646%
-225280 MB allocated, cumulative writes: 197753, cumulative frees: 84767, Duration: 58ms, Space usage: 23.24718%
-235520 MB allocated, cumulative writes: 206324, cumulative frees: 88256, Duration: 51ms, Space usage: 24.28491%
-245759 MB allocated, cumulative writes: 215590, cumulative frees: 92389, Duration: 58ms, Space usage: 25.32051%
-255995 MB allocated, cumulative writes: 224430, cumulative frees: 96178, Duration: 60ms, Space usage: 26.35993%
-266241 MB allocated, cumulative writes: 233211, cumulative frees: 99888, Duration: 55ms, Space usage: 27.38850%
-276482 MB allocated, cumulative writes: 241860, cumulative frees: 103563, Duration: 53ms, Space usage: 28.42386%
-286716 MB allocated, cumulative writes: 250676, cumulative frees: 107385, Duration: 55ms, Space usage: 29.47620%
-296960 MB allocated, cumulative writes: 259581, cumulative frees: 111267, Duration: 57ms, Space usage: 30.51422%
-307197 MB allocated, cumulative writes: 268646, cumulative frees: 115158, Duration: 57ms, Space usage: 31.55925%
-317440 MB allocated, cumulative writes: 277632, cumulative frees: 119024, Duration: 57ms, Space usage: 32.60439%
-327673 MB allocated, cumulative writes: 286444, cumulative frees: 122748, Duration: 57ms, Space usage: 33.64028%
-337920 MB allocated, cumulative writes: 295711, cumulative frees: 126856, Duration: 61ms, Space usage: 34.67658%
-348160 MB allocated, cumulative writes: 304875, cumulative frees: 130908, Duration: 60ms, Space usage: 35.71550%
-358401 MB allocated, cumulative writes: 314072, cumulative frees: 134988, Duration: 60ms, Space usage: 36.75889%
-368642 MB allocated, cumulative writes: 322816, cumulative frees: 138628, Duration: 60ms, Space usage: 37.79788%
-378880 MB allocated, cumulative writes: 331707, cumulative frees: 142385, Duration: 59ms, Space usage: 38.84441%
-389123 MB allocated, cumulative writes: 340560, cumulative frees: 146129, Duration: 56ms, Space usage: 39.88196%
-399358 MB allocated, cumulative writes: 349491, cumulative frees: 149928, Duration: 58ms, Space usage: 40.91240%
-409603 MB allocated, cumulative writes: 358230, cumulative frees: 153667, Duration: 58ms, Space usage: 41.95762%
-419842 MB allocated, cumulative writes: 367092, cumulative frees: 157441, Duration: 59ms, Space usage: 42.99173%
-430063 MB allocated, cumulative writes: 376172, cumulative frees: 161409, Duration: 62ms, Space usage: 44.03439%
-440322 MB allocated, cumulative writes: 385383, cumulative frees: 165414, Duration: 61ms, Space usage: 45.07752%
-450556 MB allocated, cumulative writes: 394787, cumulative frees: 169623, Duration: 63ms, Space usage: 46.12692%
-460795 MB allocated, cumulative writes: 403811, cumulative frees: 173498, Duration: 59ms, Space usage: 47.17053%
-471040 MB allocated, cumulative writes: 412652, cumulative frees: 177366, Duration: 58ms, Space usage: 48.20087%
-481280 MB allocated, cumulative writes: 421483, cumulative frees: 181017, Duration: 59ms, Space usage: 49.23695%
-491508 MB allocated, cumulative writes: 430268, cumulative frees: 184710, Duration: 59ms, Space usage: 50.28053%
-501760 MB allocated, cumulative writes: 439361, cumulative frees: 188583, Duration: 62ms, Space usage: 51.31453%
-511999 MB allocated, cumulative writes: 448617, cumulative frees: 192627, Duration: 64ms, Space usage: 52.35134%
-522241 MB allocated, cumulative writes: 457708, cumulative frees: 196530, Duration: 64ms, Space usage: 53.38530%
-532479 MB allocated, cumulative writes: 466842, cumulative frees: 200478, Duration: 63ms, Space usage: 54.42931%
-542723 MB allocated, cumulative writes: 475765, cumulative frees: 204282, Duration: 61ms, Space usage: 55.46919%
-552958 MB allocated, cumulative writes: 484736, cumulative frees: 208125, Duration: 58ms, Space usage: 56.50420%
-563201 MB allocated, cumulative writes: 493503, cumulative frees: 211849, Duration: 59ms, Space usage: 57.54647%
-573440 MB allocated, cumulative writes: 502176, cumulative frees: 215462, Duration: 61ms, Space usage: 58.58834%
-583681 MB allocated, cumulative writes: 511212, cumulative frees: 219334, Duration: 69ms, Space usage: 59.62298%
-593921 MB allocated, cumulative writes: 520221, cumulative frees: 223244, Duration: 65ms, Space usage: 60.67366%
-604162 MB allocated, cumulative writes: 529226, cumulative frees: 227073, Duration: 64ms, Space usage: 61.71045%
-614397 MB allocated, cumulative writes: 538311, cumulative frees: 230996, Duration: 65ms, Space usage: 62.75329%
-624639 MB allocated, cumulative writes: 546994, cumulative frees: 234668, Duration: 63ms, Space usage: 63.78628%
-634878 MB allocated, cumulative writes: 555683, cumulative frees: 238368, Duration: 63ms, Space usage: 64.81355%
-645122 MB allocated, cumulative writes: 564653, cumulative frees: 242274, Duration: 65ms, Space usage: 65.85699%
-655355 MB allocated, cumulative writes: 573711, cumulative frees: 246226, Duration: 64ms, Space usage: 66.89147%
-665601 MB allocated, cumulative writes: 582597, cumulative frees: 249984, Duration: 66ms, Space usage: 67.91595%
-675837 MB allocated, cumulative writes: 591512, cumulative frees: 253808, Duration: 63ms, Space usage: 68.95459%
-686078 MB allocated, cumulative writes: 600530, cumulative frees: 257694, Duration: 61ms, Space usage: 69.98523%
-696323 MB allocated, cumulative writes: 609489, cumulative frees: 261554, Duration: 71ms, Space usage: 71.02772%
-706557 MB allocated, cumulative writes: 618327, cumulative frees: 265339, Duration: 64ms, Space usage: 72.06729%
-716798 MB allocated, cumulative writes: 627242, cumulative frees: 269124, Duration: 65ms, Space usage: 73.09696%
-727033 MB allocated, cumulative writes: 636077, cumulative frees: 272958, Duration: 65ms, Space usage: 74.12902%
-737281 MB allocated, cumulative writes: 645159, cumulative frees: 276870, Duration: 67ms, Space usage: 75.17044%
-747520 MB allocated, cumulative writes: 654549, cumulative frees: 281085, Duration: 70ms, Space usage: 76.20478%
-757759 MB allocated, cumulative writes: 663616, cumulative frees: 285018, Duration: 69ms, Space usage: 77.24870%
-767999 MB allocated, cumulative writes: 672762, cumulative frees: 289013, Duration: 68ms, Space usage: 78.27859%
-778240 MB allocated, cumulative writes: 681609, cumulative frees: 292773, Duration: 64ms, Space usage: 79.32513%
-788482 MB allocated, cumulative writes: 690690, cumulative frees: 296686, Duration: 65ms, Space usage: 80.36554%
-798720 MB allocated, cumulative writes: 699436, cumulative frees: 300378, Duration: 65ms, Space usage: 81.40476%
-808962 MB allocated, cumulative writes: 708132, cumulative frees: 303931, Duration: 63ms, Space usage: 82.45417%
-819200 MB allocated, cumulative writes: 716934, cumulative frees: 307602, Duration: 64ms, Space usage: 83.48755%
-829441 MB allocated, cumulative writes: 725589, cumulative frees: 311258, Duration: 63ms, Space usage: 84.51800%
-839681 MB allocated, cumulative writes: 734397, cumulative frees: 315002, Duration: 67ms, Space usage: 85.55131%
-849923 MB allocated, cumulative writes: 743287, cumulative frees: 318798, Duration: 71ms, Space usage: 86.58491%
-860160 MB allocated, cumulative writes: 752194, cumulative frees: 322663, Duration: 74ms, Space usage: 87.62677%
-870400 MB allocated, cumulative writes: 761046, cumulative frees: 326349, Duration: 69ms, Space usage: 88.66366%
-880643 MB allocated, cumulative writes: 770077, cumulative frees: 330251, Duration: 70ms, Space usage: 89.70200%
-890880 MB allocated, cumulative writes: 778877, cumulative frees: 333922, Duration: 66ms, Space usage: 90.73500%
-901120 MB allocated, cumulative writes: 787766, cumulative frees: 337733, Duration: 70ms, Space usage: 91.78168%
-911358 MB allocated, cumulative writes: 796475, cumulative frees: 341399, Duration: 67ms, Space usage: 92.82228%
-921596 MB allocated, cumulative writes: 805259, cumulative frees: 345125, Duration: 80ms, Space usage: 93.85737%
-931835 MB allocated, cumulative writes: 814232, cumulative frees: 348916, Duration: 69ms, Space usage: 94.89461%
-942076 MB allocated, cumulative writes: 823228, cumulative frees: 352740, Duration: 69ms, Space usage: 95.92990%
+10230 MB allocated, cumulative writes: 8740, cumulative frees: 3634, Duration: 20ms, Space usage: 2.20247%
+20471 MB allocated, cumulative writes: 17503, cumulative frees: 7270, Duration: 33ms, Space usage: 3.16785%
+30693 MB allocated, cumulative writes: 26380, cumulative frees: 11040, Duration: 34ms, Space usage: 4.42328%
+40928 MB allocated, cumulative writes: 35412, cumulative frees: 15019, Duration: 36ms, Space usage: 5.68437%
+51182 MB allocated, cumulative writes: 44368, cumulative frees: 18816, Duration: 35ms, Space usage: 6.92557%
+61430 MB allocated, cumulative writes: 53256, cumulative frees: 22627, Duration: 39ms, Space usage: 8.16481%
+71650 MB allocated, cumulative writes: 62445, cumulative frees: 26660, Duration: 43ms, Space usage: 9.42614%
+81906 MB allocated, cumulative writes: 71446, cumulative frees: 30500, Duration: 43ms, Space usage: 10.69429%
+92162 MB allocated, cumulative writes: 80246, cumulative frees: 34264, Duration: 44ms, Space usage: 11.96945%
+102394 MB allocated, cumulative writes: 89589, cumulative frees: 38495, Duration: 49ms, Space usage: 13.24812%
+112638 MB allocated, cumulative writes: 98432, cumulative frees: 42317, Duration: 45ms, Space usage: 14.53583%
+122876 MB allocated, cumulative writes: 107525, cumulative frees: 46168, Duration: 47ms, Space usage: 15.82913%
+133120 MB allocated, cumulative writes: 116433, cumulative frees: 50010, Duration: 46ms, Space usage: 17.10712%
+143358 MB allocated, cumulative writes: 125326, cumulative frees: 53761, Duration: 46ms, Space usage: 18.39003%
+153596 MB allocated, cumulative writes: 134061, cumulative frees: 57511, Duration: 45ms, Space usage: 19.67755%
+163841 MB allocated, cumulative writes: 142844, cumulative frees: 61165, Duration: 45ms, Space usage: 20.95717%
+174079 MB allocated, cumulative writes: 151704, cumulative frees: 64893, Duration: 45ms, Space usage: 22.24713%
+184313 MB allocated, cumulative writes: 160446, cumulative frees: 68513, Duration: 43ms, Space usage: 23.53587%
+194554 MB allocated, cumulative writes: 169333, cumulative frees: 72278, Duration: 45ms, Space usage: 24.82495%
+204796 MB allocated, cumulative writes: 178201, cumulative frees: 76082, Duration: 45ms, Space usage: 26.11005%
+215042 MB allocated, cumulative writes: 186986, cumulative frees: 79781, Duration: 45ms, Space usage: 27.40516%
+225276 MB allocated, cumulative writes: 195874, cumulative frees: 83642, Duration: 45ms, Space usage: 28.68084%
+235519 MB allocated, cumulative writes: 204779, cumulative frees: 87425, Duration: 47ms, Space usage: 29.95445%
+245760 MB allocated, cumulative writes: 213570, cumulative frees: 91095, Duration: 46ms, Space usage: 31.24399%
+255997 MB allocated, cumulative writes: 222485, cumulative frees: 94860, Duration: 47ms, Space usage: 32.52670%
+266233 MB allocated, cumulative writes: 231362, cumulative frees: 98569, Duration: 47ms, Space usage: 33.81102%
+276482 MB allocated, cumulative writes: 240543, cumulative frees: 102585, Duration: 49ms, Space usage: 35.10698%
+286712 MB allocated, cumulative writes: 249432, cumulative frees: 106349, Duration: 47ms, Space usage: 36.38937%
+296963 MB allocated, cumulative writes: 258498, cumulative frees: 110311, Duration: 48ms, Space usage: 37.67304%
+307195 MB allocated, cumulative writes: 267715, cumulative frees: 114372, Duration: 48ms, Space usage: 38.95011%
+317418 MB allocated, cumulative writes: 276767, cumulative frees: 118267, Duration: 48ms, Space usage: 40.23288%
+327680 MB allocated, cumulative writes: 285608, cumulative frees: 122014, Duration: 47ms, Space usage: 41.52364%
+337919 MB allocated, cumulative writes: 294728, cumulative frees: 125969, Duration: 49ms, Space usage: 42.79993%
+348154 MB allocated, cumulative writes: 303668, cumulative frees: 129753, Duration: 49ms, Space usage: 44.07485%
+358400 MB allocated, cumulative writes: 312529, cumulative frees: 133476, Duration: 48ms, Space usage: 45.35004%
+368632 MB allocated, cumulative writes: 321174, cumulative frees: 137046, Duration: 46ms, Space usage: 46.63195%
+378880 MB allocated, cumulative writes: 330339, cumulative frees: 140978, Duration: 49ms, Space usage: 47.92402%
+389121 MB allocated, cumulative writes: 339305, cumulative frees: 144855, Duration: 49ms, Space usage: 49.21386%
+399354 MB allocated, cumulative writes: 348280, cumulative frees: 148670, Duration: 49ms, Space usage: 50.48072%
+409601 MB allocated, cumulative writes: 357670, cumulative frees: 152814, Duration: 51ms, Space usage: 51.76299%
+419836 MB allocated, cumulative writes: 366566, cumulative frees: 156591, Duration: 47ms, Space usage: 53.04541%
+430078 MB allocated, cumulative writes: 375293, cumulative frees: 160238, Duration: 47ms, Space usage: 54.32235%
+440314 MB allocated, cumulative writes: 384226, cumulative frees: 164098, Duration: 49ms, Space usage: 55.60830%
+450558 MB allocated, cumulative writes: 393251, cumulative frees: 167987, Duration: 49ms, Space usage: 56.88892%
+460794 MB allocated, cumulative writes: 402081, cumulative frees: 171736, Duration: 48ms, Space usage: 58.15723%
+471042 MB allocated, cumulative writes: 410817, cumulative frees: 175434, Duration: 50ms, Space usage: 59.43699%
+481282 MB allocated, cumulative writes: 419754, cumulative frees: 179241, Duration: 50ms, Space usage: 60.71415%
+491517 MB allocated, cumulative writes: 428517, cumulative frees: 182895, Duration: 48ms, Space usage: 61.99584%
+501757 MB allocated, cumulative writes: 437796, cumulative frees: 186991, Duration: 52ms, Space usage: 63.27907%
+511986 MB allocated, cumulative writes: 446725, cumulative frees: 190838, Duration: 49ms, Space usage: 64.55268%
+522232 MB allocated, cumulative writes: 455514, cumulative frees: 194466, Duration: 48ms, Space usage: 65.83755%
+532479 MB allocated, cumulative writes: 464567, cumulative frees: 198389, Duration: 50ms, Space usage: 67.12240%
+542721 MB allocated, cumulative writes: 473656, cumulative frees: 202346, Duration: 51ms, Space usage: 68.40757%
+552960 MB allocated, cumulative writes: 482815, cumulative frees: 206323, Duration: 50ms, Space usage: 69.69417%
+563200 MB allocated, cumulative writes: 491681, cumulative frees: 210167, Duration: 50ms, Space usage: 70.97150%
+573438 MB allocated, cumulative writes: 500370, cumulative frees: 213768, Duration: 48ms, Space usage: 72.25852%
+583681 MB allocated, cumulative writes: 508958, cumulative frees: 217310, Duration: 47ms, Space usage: 73.53931%
+593915 MB allocated, cumulative writes: 518048, cumulative frees: 221308, Duration: 50ms, Space usage: 74.82287%
+604152 MB allocated, cumulative writes: 526741, cumulative frees: 224958, Duration: 47ms, Space usage: 76.10621%
+614399 MB allocated, cumulative writes: 535692, cumulative frees: 228837, Duration: 49ms, Space usage: 77.38383%
+624640 MB allocated, cumulative writes: 544423, cumulative frees: 232506, Duration: 47ms, Space usage: 78.66051%
+634881 MB allocated, cumulative writes: 553487, cumulative frees: 236395, Duration: 50ms, Space usage: 79.94675%
+645114 MB allocated, cumulative writes: 562567, cumulative frees: 240377, Duration: 50ms, Space usage: 81.23448%
+655361 MB allocated, cumulative writes: 571501, cumulative frees: 244243, Duration: 49ms, Space usage: 82.52040%
+665599 MB allocated, cumulative writes: 580570, cumulative frees: 248198, Duration: 51ms, Space usage: 83.81013%
+675835 MB allocated, cumulative writes: 589301, cumulative frees: 251888, Duration: 49ms, Space usage: 85.09068%
+686081 MB allocated, cumulative writes: 598214, cumulative frees: 255691, Duration: 50ms, Space usage: 86.37767%
+696314 MB allocated, cumulative writes: 607207, cumulative frees: 259599, Duration: 50ms, Space usage: 87.65990%
+706553 MB allocated, cumulative writes: 616246, cumulative frees: 263574, Duration: 50ms, Space usage: 88.93354%
+716796 MB allocated, cumulative writes: 625023, cumulative frees: 267334, Duration: 48ms, Space usage: 90.21317%
+727041 MB allocated, cumulative writes: 633906, cumulative frees: 271183, Duration: 49ms, Space usage: 91.48809%
+737279 MB allocated, cumulative writes: 642941, cumulative frees: 275086, Duration: 50ms, Space usage: 92.76566%
+747516 MB allocated, cumulative writes: 651783, cumulative frees: 278797, Duration: 49ms, Space usage: 94.04898%
+757755 MB allocated, cumulative writes: 660959, cumulative frees: 282781, Duration: 51ms, Space usage: 95.32849%
+768000 MB allocated, cumulative writes: 670068, cumulative frees: 286733, Duration: 51ms, Space usage: 96.61941%
 
 Memory Pool Statistics:
-Total Allocations: 827452
-Pool Hits: 72432 (8.75%)
-Pool Misses: 755020 (91.25%)
-Total Frees: 354613
-Pool Free Hits: 50117 (14.13%)
-Pool Free Misses: 304496 (85.87%)
+Total Allocations: 671096
+Pool Hits: 66602 (9.92%)
+Pool Misses: 604494 (90.08%)
+Total Frees: 287210
+Pool Free Hits: 45971 (16.01%)
+Pool Free Misses: 241239 (83.99%)
 Iteration 1 results:
-  Total writes: 827420
-  Total frees: 354594
-  Max usage: 96.39369%
-  Final usage: 96.39369%
-  Memory usage: 1029520 bytes
-  Duration: 5.4423565s
+  Total writes: 671064
+  Total frees: 287196
+  Max usage: 96.74826%
+  Final usage: 96.74826%
+  Memory usage: 1547648 bytes
+  Duration: 3.534135667s
 
 Running iteration 2...
 Server listening on localhost:1234
-10229 MB allocated, cumulative writes: 8625, cumulative frees: 3554, Duration: 162ms, Space usage: 1.90651%
-20462 MB allocated, cumulative writes: 17487, cumulative frees: 7275, Duration: 143ms, Space usage: 2.69335%
-30715 MB allocated, cumulative writes: 26254, cumulative frees: 10900, Duration: 144ms, Space usage: 3.69725%
-40950 MB allocated, cumulative writes: 35080, cumulative frees: 14629, Duration: 149ms, Space usage: 4.68749%
-51177 MB allocated, cumulative writes: 43956, cumulative frees: 18469, Duration: 145ms, Space usage: 5.67889%
-61434 MB allocated, cumulative writes: 52966, cumulative frees: 22346, Duration: 152ms, Space usage: 6.67145%
-71677 MB allocated, cumulative writes: 61822, cumulative frees: 26073, Duration: 145ms, Space usage: 7.67970%
-81917 MB allocated, cumulative writes: 70692, cumulative frees: 29861, Duration: 148ms, Space usage: 8.68326%
-92138 MB allocated, cumulative writes: 79471, cumulative frees: 33557, Duration: 150ms, Space usage: 9.72050%
-102375 MB allocated, cumulative writes: 88469, cumulative frees: 37497, Duration: 153ms, Space usage: 10.74690%
-112641 MB allocated, cumulative writes: 97389, cumulative frees: 41294, Duration: 152ms, Space usage: 11.78709%
-122878 MB allocated, cumulative writes: 106444, cumulative frees: 45202, Duration: 158ms, Space usage: 12.83028%
-133111 MB allocated, cumulative writes: 115499, cumulative frees: 49142, Duration: 156ms, Space usage: 13.87874%
-143342 MB allocated, cumulative writes: 124535, cumulative frees: 52981, Duration: 154ms, Space usage: 14.92475%
-153580 MB allocated, cumulative writes: 133210, cumulative frees: 56586, Duration: 150ms, Space usage: 15.96421%
-163833 MB allocated, cumulative writes: 142151, cumulative frees: 60403, Duration: 156ms, Space usage: 17.00746%
-174071 MB allocated, cumulative writes: 150778, cumulative frees: 63968, Duration: 149ms, Space usage: 18.05584%
-184308 MB allocated, cumulative writes: 159676, cumulative frees: 67742, Duration: 157ms, Space usage: 19.09765%
-194539 MB allocated, cumulative writes: 168567, cumulative frees: 71503, Duration: 153ms, Space usage: 20.14071%
-204793 MB allocated, cumulative writes: 177447, cumulative frees: 75200, Duration: 152ms, Space usage: 21.18404%
-215037 MB allocated, cumulative writes: 186407, cumulative frees: 79054, Duration: 159ms, Space usage: 22.21603%
-225279 MB allocated, cumulative writes: 195274, cumulative frees: 82916, Duration: 152ms, Space usage: 23.26417%
-235510 MB allocated, cumulative writes: 204375, cumulative frees: 86894, Duration: 160ms, Space usage: 24.30617%
-245746 MB allocated, cumulative writes: 212985, cumulative frees: 90474, Duration: 149ms, Space usage: 25.33984%
-255991 MB allocated, cumulative writes: 222001, cumulative frees: 94315, Duration: 154ms, Space usage: 26.38222%
-266228 MB allocated, cumulative writes: 231149, cumulative frees: 98324, Duration: 160ms, Space usage: 27.41820%
-276477 MB allocated, cumulative writes: 240167, cumulative frees: 102211, Duration: 156ms, Space usage: 28.46713%
-286707 MB allocated, cumulative writes: 248932, cumulative frees: 105922, Duration: 151ms, Space usage: 29.50522%
-296951 MB allocated, cumulative writes: 258321, cumulative frees: 110056, Duration: 167ms, Space usage: 30.54621%
-307187 MB allocated, cumulative writes: 267279, cumulative frees: 113911, Duration: 158ms, Space usage: 31.58515%
-317441 MB allocated, cumulative writes: 275974, cumulative frees: 117541, Duration: 151ms, Space usage: 32.61671%
-327673 MB allocated, cumulative writes: 284833, cumulative frees: 121347, Duration: 157ms, Space usage: 33.65296%
-337917 MB allocated, cumulative writes: 294033, cumulative frees: 125398, Duration: 161ms, Space usage: 34.69716%
-348155 MB allocated, cumulative writes: 302934, cumulative frees: 129211, Duration: 159ms, Space usage: 35.74037%
-358388 MB allocated, cumulative writes: 311876, cumulative frees: 133114, Duration: 156ms, Space usage: 36.77649%
-368626 MB allocated, cumulative writes: 320869, cumulative frees: 137003, Duration: 158ms, Space usage: 37.82441%
-378869 MB allocated, cumulative writes: 329909, cumulative frees: 140985, Duration: 164ms, Space usage: 38.85674%
-389112 MB allocated, cumulative writes: 338763, cumulative frees: 144736, Duration: 149ms, Space usage: 39.89768%
-399355 MB allocated, cumulative writes: 347644, cumulative frees: 148496, Duration: 156ms, Space usage: 40.94086%
-409586 MB allocated, cumulative writes: 356800, cumulative frees: 152496, Duration: 168ms, Space usage: 41.98750%
-419831 MB allocated, cumulative writes: 365905, cumulative frees: 156486, Duration: 161ms, Space usage: 43.02855%
-430074 MB allocated, cumulative writes: 375071, cumulative frees: 160455, Duration: 161ms, Space usage: 44.05776%
-440312 MB allocated, cumulative writes: 384039, cumulative frees: 164322, Duration: 160ms, Space usage: 45.10664%
-450554 MB allocated, cumulative writes: 393191, cumulative frees: 168307, Duration: 163ms, Space usage: 46.14442%
-460796 MB allocated, cumulative writes: 402135, cumulative frees: 172099, Duration: 158ms, Space usage: 47.17653%
-471026 MB allocated, cumulative writes: 411060, cumulative frees: 175985, Duration: 160ms, Space usage: 48.20876%
-481262 MB allocated, cumulative writes: 420176, cumulative frees: 179940, Duration: 161ms, Space usage: 49.23840%
-491510 MB allocated, cumulative writes: 429205, cumulative frees: 183764, Duration: 161ms, Space usage: 50.28910%
-501760 MB allocated, cumulative writes: 438180, cumulative frees: 187661, Duration: 164ms, Space usage: 51.33253%
-511985 MB allocated, cumulative writes: 447181, cumulative frees: 191523, Duration: 160ms, Space usage: 52.36944%
-522229 MB allocated, cumulative writes: 456173, cumulative frees: 195461, Duration: 163ms, Space usage: 53.41258%
-532470 MB allocated, cumulative writes: 464944, cumulative frees: 199268, Duration: 155ms, Space usage: 54.43993%
-542706 MB allocated, cumulative writes: 473778, cumulative frees: 203016, Duration: 157ms, Space usage: 55.47112%
-552954 MB allocated, cumulative writes: 482670, cumulative frees: 206800, Duration: 156ms, Space usage: 56.50920%
-563177 MB allocated, cumulative writes: 491423, cumulative frees: 210466, Duration: 156ms, Space usage: 57.55654%
-573432 MB allocated, cumulative writes: 500369, cumulative frees: 214381, Duration: 159ms, Space usage: 58.59741%
-583661 MB allocated, cumulative writes: 509079, cumulative frees: 218039, Duration: 133ms, Space usage: 59.63917%
-593913 MB allocated, cumulative writes: 518046, cumulative frees: 221847, Duration: 157ms, Space usage: 60.67440%
-604125 MB allocated, cumulative writes: 526882, cumulative frees: 225630, Duration: 155ms, Space usage: 61.70381%
-614389 MB allocated, cumulative writes: 536151, cumulative frees: 229734, Duration: 164ms, Space usage: 62.74734%
-624638 MB allocated, cumulative writes: 545061, cumulative frees: 233528, Duration: 165ms, Space usage: 63.78351%
-634875 MB allocated, cumulative writes: 553662, cumulative frees: 237040, Duration: 150ms, Space usage: 64.81002%
-645113 MB allocated, cumulative writes: 562459, cumulative frees: 240689, Duration: 151ms, Space usage: 65.84726%
-655347 MB allocated, cumulative writes: 571291, cumulative frees: 244388, Duration: 153ms, Space usage: 66.88514%
-665595 MB allocated, cumulative writes: 580363, cumulative frees: 248353, Duration: 163ms, Space usage: 67.92557%
-675833 MB allocated, cumulative writes: 589655, cumulative frees: 252435, Duration: 168ms, Space usage: 68.97116%
-686072 MB allocated, cumulative writes: 598673, cumulative frees: 256260, Duration: 157ms, Space usage: 70.01035%
-696309 MB allocated, cumulative writes: 607453, cumulative frees: 259877, Duration: 152ms, Space usage: 71.05655%
-706551 MB allocated, cumulative writes: 616237, cumulative frees: 263581, Duration: 151ms, Space usage: 72.08467%
-716789 MB allocated, cumulative writes: 625217, cumulative frees: 267317, Duration: 155ms, Space usage: 73.12692%
-727030 MB allocated, cumulative writes: 634387, cumulative frees: 271304, Duration: 163ms, Space usage: 74.17005%
-737253 MB allocated, cumulative writes: 643513, cumulative frees: 275244, Duration: 165ms, Space usage: 75.20652%
-747506 MB allocated, cumulative writes: 652571, cumulative frees: 279135, Duration: 176ms, Space usage: 76.24684%
-757753 MB allocated, cumulative writes: 661812, cumulative frees: 283190, Duration: 165ms, Space usage: 77.27820%
-767993 MB allocated, cumulative writes: 670776, cumulative frees: 287035, Duration: 159ms, Space usage: 78.32148%
-778231 MB allocated, cumulative writes: 679782, cumulative frees: 290844, Duration: 157ms, Space usage: 79.35985%
-788464 MB allocated, cumulative writes: 688745, cumulative frees: 294729, Duration: 156ms, Space usage: 80.39957%
-798707 MB allocated, cumulative writes: 697614, cumulative frees: 298486, Duration: 157ms, Space usage: 81.43237%
-808949 MB allocated, cumulative writes: 706519, cumulative frees: 302198, Duration: 156ms, Space usage: 82.45930%
-819192 MB allocated, cumulative writes: 715743, cumulative frees: 306249, Duration: 168ms, Space usage: 83.48573%
-829431 MB allocated, cumulative writes: 724773, cumulative frees: 310159, Duration: 161ms, Space usage: 84.52368%
-839670 MB allocated, cumulative writes: 733780, cumulative frees: 314072, Duration: 162ms, Space usage: 85.56132%
-849918 MB allocated, cumulative writes: 742635, cumulative frees: 317797, Duration: 157ms, Space usage: 86.60032%
-860159 MB allocated, cumulative writes: 751600, cumulative frees: 321579, Duration: 163ms, Space usage: 87.63595%
-870387 MB allocated, cumulative writes: 760419, cumulative frees: 325339, Duration: 157ms, Space usage: 88.67332%
-880640 MB allocated, cumulative writes: 769556, cumulative frees: 329284, Duration: 170ms, Space usage: 89.71845%
-890874 MB allocated, cumulative writes: 778491, cumulative frees: 333033, Duration: 158ms, Space usage: 90.75419%
-901107 MB allocated, cumulative writes: 787494, cumulative frees: 336879, Duration: 161ms, Space usage: 91.79606%
-911346 MB allocated, cumulative writes: 796814, cumulative frees: 341019, Duration: 169ms, Space usage: 92.82448%
-921583 MB allocated, cumulative writes: 805741, cumulative frees: 344930, Duration: 162ms, Space usage: 93.86035%
-931840 MB allocated, cumulative writes: 814617, cumulative frees: 348681, Duration: 157ms, Space usage: 94.89975%
-942074 MB allocated, cumulative writes: 823554, cumulative frees: 352491, Duration: 159ms, Space usage: 95.93931%
+10222 MB allocated, cumulative writes: 8889, cumulative frees: 3765, Duration: 176ms, Space usage: 2.22050%
+20469 MB allocated, cumulative writes: 18183, cumulative frees: 7884, Duration: 157ms, Space usage: 3.19949%
+30698 MB allocated, cumulative writes: 26905, cumulative frees: 11546, Duration: 141ms, Space usage: 4.43044%
+40933 MB allocated, cumulative writes: 35984, cumulative frees: 15452, Duration: 148ms, Space usage: 5.69101%
+51183 MB allocated, cumulative writes: 44801, cumulative frees: 19138, Duration: 143ms, Space usage: 6.93953%
+61429 MB allocated, cumulative writes: 53640, cumulative frees: 22936, Duration: 147ms, Space usage: 8.17522%
+71660 MB allocated, cumulative writes: 62601, cumulative frees: 26789, Duration: 147ms, Space usage: 9.43035%
+81915 MB allocated, cumulative writes: 71545, cumulative frees: 30653, Duration: 148ms, Space usage: 10.69851%
+92146 MB allocated, cumulative writes: 80259, cumulative frees: 34290, Duration: 143ms, Space usage: 11.96408%
+102386 MB allocated, cumulative writes: 88867, cumulative frees: 38001, Duration: 142ms, Space usage: 13.24029%
+112624 MB allocated, cumulative writes: 97158, cumulative frees: 41275, Duration: 132ms, Space usage: 14.51786%
+122873 MB allocated, cumulative writes: 106357, cumulative frees: 45309, Duration: 154ms, Space usage: 15.81180%
+133109 MB allocated, cumulative writes: 115515, cumulative frees: 49303, Duration: 153ms, Space usage: 17.09579%
+143351 MB allocated, cumulative writes: 124364, cumulative frees: 53078, Duration: 149ms, Space usage: 18.39588%
+153590 MB allocated, cumulative writes: 133323, cumulative frees: 56928, Duration: 151ms, Space usage: 19.68677%
+163838 MB allocated, cumulative writes: 142319, cumulative frees: 60866, Duration: 150ms, Space usage: 20.96529%
+174076 MB allocated, cumulative writes: 151302, cumulative frees: 64760, Duration: 153ms, Space usage: 22.24712%
+184309 MB allocated, cumulative writes: 160169, cumulative frees: 68596, Duration: 147ms, Space usage: 23.51782%
+194552 MB allocated, cumulative writes: 168975, cumulative frees: 72390, Duration: 148ms, Space usage: 24.81358%
+204791 MB allocated, cumulative writes: 177937, cumulative frees: 76226, Duration: 154ms, Space usage: 26.09734%
+215041 MB allocated, cumulative writes: 186995, cumulative frees: 80160, Duration: 154ms, Space usage: 27.37955%
+225275 MB allocated, cumulative writes: 196144, cumulative frees: 84086, Duration: 156ms, Space usage: 28.67039%
+235514 MB allocated, cumulative writes: 205264, cumulative frees: 88087, Duration: 153ms, Space usage: 29.95911%
+245744 MB allocated, cumulative writes: 213968, cumulative frees: 91749, Duration: 144ms, Space usage: 31.24449%
+255985 MB allocated, cumulative writes: 223004, cumulative frees: 95630, Duration: 153ms, Space usage: 32.53173%
+266239 MB allocated, cumulative writes: 231805, cumulative frees: 99325, Duration: 148ms, Space usage: 33.80250%
+276468 MB allocated, cumulative writes: 240677, cumulative frees: 103037, Duration: 149ms, Space usage: 35.08515%
+286710 MB allocated, cumulative writes: 249553, cumulative frees: 106839, Duration: 147ms, Space usage: 36.36488%
+296946 MB allocated, cumulative writes: 258717, cumulative frees: 110805, Duration: 155ms, Space usage: 37.64747%
+307186 MB allocated, cumulative writes: 267585, cumulative frees: 114558, Duration: 152ms, Space usage: 38.93037%
+317429 MB allocated, cumulative writes: 276302, cumulative frees: 118345, Duration: 147ms, Space usage: 40.20466%
+327678 MB allocated, cumulative writes: 285400, cumulative frees: 122289, Duration: 152ms, Space usage: 41.49378%
+337909 MB allocated, cumulative writes: 294388, cumulative frees: 126144, Duration: 150ms, Space usage: 42.77243%
+348147 MB allocated, cumulative writes: 303279, cumulative frees: 129874, Duration: 146ms, Space usage: 44.06172%
+358389 MB allocated, cumulative writes: 312153, cumulative frees: 133652, Duration: 148ms, Space usage: 45.33910%
+368631 MB allocated, cumulative writes: 320798, cumulative frees: 137181, Duration: 141ms, Space usage: 46.61492%
+378875 MB allocated, cumulative writes: 329585, cumulative frees: 140882, Duration: 145ms, Space usage: 47.90253%
+389109 MB allocated, cumulative writes: 338681, cumulative frees: 144822, Duration: 154ms, Space usage: 49.18650%
+399349 MB allocated, cumulative writes: 347838, cumulative frees: 148923, Duration: 158ms, Space usage: 50.47237%
+409591 MB allocated, cumulative writes: 356996, cumulative frees: 153070, Duration: 157ms, Space usage: 51.74237%
+419830 MB allocated, cumulative writes: 366043, cumulative frees: 157066, Duration: 156ms, Space usage: 53.03169%
+430074 MB allocated, cumulative writes: 375256, cumulative frees: 161064, Duration: 155ms, Space usage: 54.31773%
+440314 MB allocated, cumulative writes: 384443, cumulative frees: 165131, Duration: 156ms, Space usage: 55.60492%
+450547 MB allocated, cumulative writes: 393493, cumulative frees: 168932, Duration: 151ms, Space usage: 56.89282%
+460782 MB allocated, cumulative writes: 402428, cumulative frees: 172747, Duration: 153ms, Space usage: 58.17141%
+471018 MB allocated, cumulative writes: 411308, cumulative frees: 176497, Duration: 148ms, Space usage: 59.45153%
+481275 MB allocated, cumulative writes: 420389, cumulative frees: 180421, Duration: 155ms, Space usage: 60.72337%
+491499 MB allocated, cumulative writes: 429278, cumulative frees: 184164, Duration: 148ms, Space usage: 62.01519%
+501758 MB allocated, cumulative writes: 438230, cumulative frees: 188003, Duration: 148ms, Space usage: 63.30323%
+511978 MB allocated, cumulative writes: 447407, cumulative frees: 191937, Duration: 152ms, Space usage: 64.57019%
+522227 MB allocated, cumulative writes: 456271, cumulative frees: 195704, Duration: 149ms, Space usage: 65.85836%
+532478 MB allocated, cumulative writes: 465233, cumulative frees: 199589, Duration: 147ms, Space usage: 67.13083%
+542697 MB allocated, cumulative writes: 474232, cumulative frees: 203365, Duration: 150ms, Space usage: 68.42057%
+552953 MB allocated, cumulative writes: 483198, cumulative frees: 207268, Duration: 151ms, Space usage: 69.70900%
+563192 MB allocated, cumulative writes: 492441, cumulative frees: 211316, Duration: 157ms, Space usage: 70.99419%
+573399 MB allocated, cumulative writes: 501630, cumulative frees: 215325, Duration: 154ms, Space usage: 72.27132%
+583677 MB allocated, cumulative writes: 510524, cumulative frees: 219124, Duration: 149ms, Space usage: 73.54997%
+593916 MB allocated, cumulative writes: 519554, cumulative frees: 222939, Duration: 153ms, Space usage: 74.83282%
+604152 MB allocated, cumulative writes: 528313, cumulative frees: 226590, Duration: 148ms, Space usage: 76.10967%
+614386 MB allocated, cumulative writes: 536800, cumulative frees: 230081, Duration: 138ms, Space usage: 77.39422%
+624637 MB allocated, cumulative writes: 545619, cumulative frees: 233754, Duration: 151ms, Space usage: 78.67663%
+634867 MB allocated, cumulative writes: 554718, cumulative frees: 237693, Duration: 153ms, Space usage: 79.96455%
+645109 MB allocated, cumulative writes: 563519, cumulative frees: 241399, Duration: 146ms, Space usage: 81.23955%
+655350 MB allocated, cumulative writes: 572309, cumulative frees: 245055, Duration: 147ms, Space usage: 82.52386%
+665587 MB allocated, cumulative writes: 581264, cumulative frees: 248894, Duration: 151ms, Space usage: 83.80065%
+675830 MB allocated, cumulative writes: 590413, cumulative frees: 252853, Duration: 156ms, Space usage: 85.07696%
+686063 MB allocated, cumulative writes: 599358, cumulative frees: 256683, Duration: 152ms, Space usage: 86.36222%
+696310 MB allocated, cumulative writes: 608104, cumulative frees: 260395, Duration: 148ms, Space usage: 87.64159%
+706556 MB allocated, cumulative writes: 617135, cumulative frees: 264267, Duration: 152ms, Space usage: 88.92273%
+716784 MB allocated, cumulative writes: 625981, cumulative frees: 267969, Duration: 145ms, Space usage: 90.21614%
+727039 MB allocated, cumulative writes: 634886, cumulative frees: 271818, Duration: 152ms, Space usage: 91.49006%
+737276 MB allocated, cumulative writes: 644010, cumulative frees: 275778, Duration: 153ms, Space usage: 92.76654%
+747491 MB allocated, cumulative writes: 653130, cumulative frees: 279756, Duration: 154ms, Space usage: 94.04988%
+757759 MB allocated, cumulative writes: 662255, cumulative frees: 283699, Duration: 152ms, Space usage: 95.32431%
+767982 MB allocated, cumulative writes: 671378, cumulative frees: 287614, Duration: 154ms, Space usage: 96.61104%
 
 Memory Pool Statistics:
-Total Allocations: 827595
-Pool Hits: 71788 (8.67%)
-Pool Misses: 755807 (91.33%)
-Total Frees: 354308
-Pool Free Hits: 49442 (13.95%)
-Pool Free Misses: 304866 (86.05%)
+Total Allocations: 672515
+Pool Hits: 66883 (9.95%)
+Pool Misses: 605632 (90.05%)
+Total Frees: 288172
+Pool Free Hits: 46319 (16.07%)
+Pool Free Misses: 241853 (83.93%)
 Iteration 2 results:
-  Total writes: 827563
-  Total frees: 354222
-  Max usage: 96.39796%
-  Final usage: 96.39796%
-  Memory usage: 1029824 bytes
-  Duration: 14.541839916s
+  Total writes: 672483
+  Total frees: 288091
+  Max usage: 96.76171%
+  Final usage: 96.76171%
+  Memory usage: 1548848 bytes
+  Duration: 11.321542s
 
 Average results:
-  Average usage: 96.39583%
-  Average memory usage: 1029672.00 bytes
-  Average duration: 9.99 seconds
+  Average usage: 96.75499%
+  Average memory usage: 1548248.00 bytes
+  Average duration: 7.43 seconds
