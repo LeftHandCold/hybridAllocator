@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"time"
 )
 
 const (
@@ -143,18 +142,11 @@ func TestBuddy(t *testing.T) {
 	}
 	t.Logf("Freed allocated space at address %d", start3)
 
-	time.Sleep(time.Second * 2)
-
-	buddy.regions[0].mutex.Lock()
-	if len(buddy.regions[0].blocks[17]) != 1 {
-		for order, blocks := range buddy.regions[0].blocks {
-			for _, b := range blocks {
-				t.Logf("region 0 order %d block: %+v", order, b)
-			}
-		}
+	if buddy.blocks[MaxOrder] == nil ||
+		buddy.blocks[MaxOrder].next != nil ||
+		buddy.blocks[MaxOrder].size != MaxBlockSize {
 		t.Fatalf("merge error")
 	}
-	buddy.regions[0].mutex.Unlock()
 }
 
 func BenchmarkAlloc(b *testing.B) {

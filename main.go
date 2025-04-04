@@ -71,31 +71,19 @@ func (st *StressTest) runStressTest(targetSize uint64) {
 		iteration++
 		log.Printf("Iteration %d: Starting allocation phase", iteration)
 		used := uint64(0)
-		allocationWg := sync.WaitGroup{}
-		for i := 0; i < 32; i++ {
-			allocationWg.Add(1)
-			go func() {
-				defer allocationWg.Done()
-				for {
-					size := generateRandomSize()
-					start, err := st.allocator.Allocate(size)
-					if err != nil {
-						if strings.Contains(err.Error(), "no space available") {
-							break
-						}
-						panic(fmt.Sprintf("Failed to Allocate. err: %v", err))
-					}
-
-					st.mu.Lock()
-					st.blocks[st.blockCount] = Block{start: start, size: size}
-					st.blockCount++
-					totalWritten += size
-					st.mu.Unlock()
+		for {
+			size := generateRandomSize()
+			start, err := st.allocator.Allocate(size)
+			if err != nil {
+				if strings.Contains(err.Error(), "no space available") {
+					break
 				}
-			}()
+				panic(fmt.Sprintf("Failed to Allocate. err: %v", err))
+			}
+			st.blocks[st.blockCount] = Block{start: start, size: size}
+			st.blockCount++
+			totalWritten += size
 		}
-
-		allocationWg.Wait()
 		used = st.allocator.GetUsedSize()
 		usage := float64(used) / float64(st.allocator.GetTotalSize()) * 100
 		log.Printf("start delete  usage: %.5f%%\n", usage)

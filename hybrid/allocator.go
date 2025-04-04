@@ -88,14 +88,13 @@ func (a *Allocator) GetTotalSize() uint64 {
 // GetMemoryUsage returns the memory overhead of the hybrid
 func (a *Allocator) GetMemoryUsage() uint64 {
 	var size uint64
-	// Calculate buddy hybrid memory usage
+	// Calculate buddy allocator memory usage
 	size = a.buddy.GetMemoryUsage()
-	// Calculate slab hybrid memory usage
+
+	// Calculate slab allocator memory usage
 	size += uint64(unsafe.Sizeof(&Slab{})) * uint64(len(a.slab.cache))
 	for _, slabs := range a.slab.cache {
-		for _, slab := range slabs {
-			size += uint64(unsafe.Sizeof(slab))
-		}
+		size += uint64(unsafe.Sizeof(slabs)) + uint64(len(slabs))*uint64(unsafe.Sizeof(&Slab{}))
 	}
 
 	Debug("Memory overhead: %d bytes", size)

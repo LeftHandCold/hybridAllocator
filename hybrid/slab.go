@@ -43,21 +43,25 @@ func (s *Slab) findFreeSpace(size uint64) (uint64, bool) {
 		return 0, false
 	}
 
+	// First try to find space in the free list
 	for i, freeStart := range s.freeList {
 		if freeStart+size <= s.start+s.size {
 			if !s.isRangeOverlap(freeStart, size) {
+				// Remove from free list
 				s.freeList = append(s.freeList[:i], s.freeList[i+1:]...)
 				return freeStart, true
 			}
 		}
 	}
-	current := s.start
-	for current+size <= s.start+s.size {
-		if !s.isRangeOverlap(current, size) {
-			s.freeList = append(s.freeList, current)
-			return current, true
+
+	// If no space in free list, try to find new space
+	// Start from the beginning of the slab
+	start := s.start
+	for start+size <= s.start+s.size {
+		if !s.isRangeOverlap(start, size) {
+			return start, true
 		}
-		current += size
+		start += size
 	}
 
 	return 0, false
@@ -185,8 +189,11 @@ func (s *SlabAllocator) Free(start, size uint64) error {
 	targetSlab.freeList = append(targetSlab.freeList, start)
 	Debug("Updated slab used size to %d", targetSlab.used)
 
-	// If slab is empty and it was allocated from buddy, add to merge queue
-	if targetSlab.used == 0 && targetSlab.fromBuddy {
+	// Calculate free space in the slab
+	freeSpace := targetSlab.size - targetSlab.used
+
+	// If slab is empty or free space exceeds 2GB and it was allocated from buddy, add to merge queue
+	if (targetSlab.used == 0 && freeSpace > 2*1024*1024*1024) && targetSlab.fromBuddy {
 		slabs = s.cache[targetSize]
 		for i, sb := range slabs {
 			if sb == targetSlab {
@@ -202,7 +209,7 @@ func (s *SlabAllocator) Free(start, size uint64) error {
 				break
 			}
 		}
-		Debug("Merge queue is full, performing synchronous merge")
+		Debug("Performing synchronous merge for slab with free space: %d", freeSpace)
 		if err := s.mergeSlab(targetSlab); err != nil {
 			Error("Failed to merge slab: %v", err)
 			return err
@@ -214,8 +221,8 @@ func (s *SlabAllocator) Free(start, size uint64) error {
 
 // mergeSlab performs the actual slab merge operation
 func (s *SlabAllocator) mergeSlab(slab *Slab) error {
+	// Clear the free list as we're merging the entire slab
 	slab.freeList = nil
-	Debug("Merging slab at address %d, size %d", slab.start, slab.size)
 
 	// Remove from slabs list
 	delete(s.slabs, slab.start)
