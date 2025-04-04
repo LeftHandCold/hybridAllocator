@@ -133,14 +133,13 @@ func (b *BuddyAllocator) mergeBlockLocked(start, size uint64) error {
 	order := getOrder(size)
 	currentStart := start
 
-	// Starting from the current order, try to merge
-	for {
+	// Try to merge blocks starting from current order
+	for order <= MaxOrder {
 		buddyStart := currentStart ^ (1 << uint(order) * BuddyStartSize)
-
-		// Use blockMap to find buddy block
 		buddyBlock, exists := b.blockMap[order][buddyStart]
+
 		if !exists {
-			// No buddy block was found to merge with, so the current block is added to the free list
+			// No buddy found, add current block to free list
 			newBlock := b.getBlock()
 			newBlock.start = currentStart
 			newBlock.size = (1 << uint(order)) * BuddyStartSize
@@ -159,7 +158,7 @@ func (b *BuddyAllocator) mergeBlockLocked(start, size uint64) error {
 			break
 		}
 
-		// Remove buddy block from linked list
+		// Remove buddy from linked list
 		if buddyBlock.prev != nil {
 			buddyBlock.prev.next = buddyBlock.next
 		} else {
@@ -171,14 +170,11 @@ func (b *BuddyAllocator) mergeBlockLocked(start, size uint64) error {
 		delete(b.blockMap[order], buddyStart)
 		b.putBlock(buddyBlock)
 
-		// Merge
+		// Merge with buddy
 		if currentStart > buddyStart {
 			currentStart = buddyStart
 		}
 		order++
-		if order > MaxOrder {
-			break
-		}
 	}
 
 	return nil

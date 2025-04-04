@@ -201,6 +201,7 @@ func runTest(iteration int) TestResult {
 	ops := 0
 	maxOps := 2000000
 	startPrint := time.Now()
+
 	// Start multiple goroutines for concurrent operations
 	for i := 0; i < 32; i++ {
 		wg.Add(1)
@@ -248,40 +249,28 @@ func runTest(iteration int) TestResult {
 								writeCount,
 								deleteCount,
 								elapsed.Round(time.Millisecond),
-								use)
-
+								use,
+							)
 							printThreshold += 10 * GB
-							startPrint = time.Now()
-						}
-						mutex.Unlock()
-					} else {
-						mutex.Lock()
-						used := GetUsedSize()
-						use := float64(used) / float64(diskSize) * 100
-						if use > 90 {
-							mutex.Unlock()
-							return
 						}
 						mutex.Unlock()
 					}
 				} else { // 30% chance to free
 					mutex.Lock()
-					if blockCount == 0 {
+					if blockCount > 0 {
+						idx := rand.Intn(blockCount)
+						block := blocks[idx]
+						blocks[idx] = blocks[blockCount-1]
+						blockCount--
+						totalAllocated -= block.size
+						deleteCount++
 						mutex.Unlock()
-						continue
+						if err := Free(block.start, block.size); err != nil {
+							log.Printf("Failed to free block: %v", err)
+						}
+					} else {
+						mutex.Unlock()
 					}
-					idx := rand.Intn(blockCount)
-					block := blocks[idx]
-					blocks[idx] = blocks[blockCount-1]
-					blockCount--
-					mutex.Unlock()
-
-					err := Free(block.start, block.size)
-					if err != nil {
-						panic(fmt.Sprintf("Failed to free memory: %v", err))
-					}
-					deleteCount++
-					totalAllocated -= block.size
 				}
 			}
 		}()

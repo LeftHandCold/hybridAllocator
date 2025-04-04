@@ -43,21 +43,25 @@ func (s *Slab) findFreeSpace(size uint64) (uint64, bool) {
 		return 0, false
 	}
 
+	// First try to find space in the free list
 	for i, freeStart := range s.freeList {
 		if freeStart+size <= s.start+s.size {
 			if !s.isRangeOverlap(freeStart, size) {
+				// Remove from free list
 				s.freeList = append(s.freeList[:i], s.freeList[i+1:]...)
 				return freeStart, true
 			}
 		}
 	}
-	current := s.start
-	for current+size <= s.start+s.size {
-		if !s.isRangeOverlap(current, size) {
-			s.freeList = append(s.freeList, current)
-			return current, true
+
+	// If no space in free list, try to find new space
+	// Start from the beginning of the slab
+	start := s.start
+	for start+size <= s.start+s.size {
+		if !s.isRangeOverlap(start, size) {
+			return start, true
 		}
-		current += size
+		start += size
 	}
 
 	return 0, false
